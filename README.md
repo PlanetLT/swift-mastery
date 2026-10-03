@@ -26,15 +26,20 @@ npm run lint
 
 Progress (lessons read, exercises done) is stored in the browser only. There is no account and no server database.
 
-## GitHub Pages
+## Vercel
 
-Publishing is a manual GitHub Action, [Deploy GitHub Pages](.github/workflows/deploy-pages.yml). It builds the static site and deploys that artifact to GitHub Pages. It does not run on every push.
+Publishing is a manual GitHub Action, [Deploy to Vercel](.github/workflows/deploy-vercel.yml). It builds the static site in GitHub Actions and uploads that build to Vercel production. It does not run on every push.
 
-1. Push this repository to GitHub.
-2. Open **Settings → Pages → Build and deployment**, and set **Source** to **GitHub Actions**.
-3. Open **Actions → Deploy GitHub Pages → Run workflow**.
+1. Create a [Vercel](https://vercel.com) project for this repository. Leave Git deployments off, or disconnect the Git integration afterward, so a push does not publish on its own.
+2. Link the project once from this folder (`npx vercel link`). Copy `orgId` and `projectId` from `.vercel/project.json`. That folder stays out of git.
+3. Create a token at [Vercel account tokens](https://vercel.com/account/tokens).
+4. In the GitHub repository, open **Settings → Secrets and variables → Actions** and add:
+   - `VERCEL_TOKEN`
+   - `VERCEL_ORG_ID`
+   - `VERCEL_PROJECT_ID`
+5. Open **Actions → Deploy to Vercel → Run workflow**.
 
-A project site is published at `https://<user>.github.io/<repository>/`. The workflow sets the Next.js base path from the repository name, so assets resolve on that URL. A repository named `<user>.github.io` is published at the domain root instead.
+The site is served from the Vercel domain root, such as `https://<project>.vercel.app`. If GitHub Pages was enabled before, turn it off under **Settings → Pages** so the old URL is no longer the published site.
 
 ## How the guide is organized
 
