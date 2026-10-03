@@ -1,0 +1,83 @@
+---
+title: Forms, symbols, and labels
+slug: forms-symbols-labels
+track: ios
+level: beginner
+order: 4
+minutes: 16
+summary: A form VoiceOver can follow, SF Symbols instead of ad-hoc icons, and labels that say what a control does.
+exit:
+  - "You can build a Form with a text field, a toggle, and a picker."
+  - "You can add an accessibility label where the visible text is not enough."
+  - "You can pick an SF Symbol and scale it with the text."
+sources:
+  - sf-symbols
+  - accessibility
+  - hig-accessibility
+  - hig-ios
+---
+
+A form is a list of decisions. On iPhone, `Form` gives you the grouped look people already know from Settings. Your job is the words and the order.
+
+Decorative icons do not replace words. An icon button needs a label that assistive technologies can read. SF Symbols are the icon set that already matches the system. Install the SF Symbols app, search there, and use the name in `Image(systemName:)`.
+
+## A form that can be read aloud
+
+```swift
+import SwiftUI
+
+struct ReminderForm: View {
+    @State private var title = ""
+    @State private var alerts = true
+    @State private var hour = 8
+
+    var body: some View {
+        Form {
+            TextField("Title", text: $title)
+            Toggle("Alerts", isOn: $alerts)
+            Picker("Hour", selection: $hour) {
+                ForEach(0..<24, id: \.self) { value in
+                    Text("\(value)").tag(value)
+                }
+            }
+            Button {
+            } label: {
+                Label("Save reminder", systemImage: "tray.and.arrow.down")
+            }
+        }
+    }
+}
+```
+
+`Label` pairs a title with a symbol. VoiceOver reads the title. If you show only the symbol, add the words back:
+
+```swift
+Image(systemName: "trash")
+    .accessibilityLabel("Delete reminder")
+```
+
+The visible title "Alerts" is enough for the toggle. A button that only shows a plus needs an accessibility label "Add reminder". Do not label it "plus" or "button".
+
+<Callout title="Where people stall">
+
+They set `.accessibilityHidden(true)` on a whole form to silence a noisy preview, then ship that. They also write labels like "image" or "icon". Open the Accessibility Inspector in Xcode, or turn on VoiceOver on a device, and walk the form with your eyes closed. If you cannot tell what a control does, the label is wrong.
+
+</Callout>
+
+## Exercise
+
+Add a symbol-only toolbar button that adds a reminder. Give it an accessibility label and a hint. Confirm the text field's placeholder is not the only name VoiceOver hears when the field is empty. Set a real prompt or label if you need one.
+
+<Solution>
+
+```swift
+.toolbar {
+    Button("Add", systemImage: "plus") {}
+        .accessibilityLabel("Add reminder")
+        .accessibilityHint("Creates a reminder from the title")
+}
+```
+
+For the text field, prefer a labeled row, `LabeledContent` or a section header "Title", so an empty field is still called "Title" rather than only the placeholder. Placeholders disappear while typing and are a weak name.
+
+</Solution>

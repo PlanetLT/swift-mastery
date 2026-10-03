@@ -1,0 +1,58 @@
+---
+title: Always On without spinning
+slug: always-on-without-spinning
+track: watch
+level: intermediate
+order: 6
+minutes: 15
+summary: TimelineView updates a watch face from a date, so Always On stays cheap and correct.
+exit:
+  - "You can explain why a one-second Timer is the wrong tool on a watch."
+  - "You can draw a remaining-time label from a TimelineView date."
+  - "You can say what Always On is allowed to do."
+sources:
+  - timelines
+  - timelineview
+  - hig-watch
+  - wwdc-workout
+---
+
+When the wrist is down, a modern watch can keep a dimmed version of your app visible. That is Always On. It is not permission to run a loop. The system asks you for views at specific dates, including dates a few minutes ahead, and displays those.
+
+`TimelineView` is how you answer. You compute the view from the date the timeline gives you. You do not read `Date()` inside the view and hope.
+
+## Time remaining, from a date
+
+```swift
+import SwiftUI
+
+struct StudyTimer: View {
+    var endsAt: Date
+
+    var body: some View {
+        TimelineView(.everyMinute) { context in
+            let remaining = endsAt.timeIntervalSince(context.date)
+            Text(remaining > 0 ? "\(Int(remaining / 60)) min" : "Done")
+                .font(.title3)
+        }
+    }
+}
+```
+
+`.everyMinute` is a reasonable cadence for a study countdown that shows minutes. A seconds display wants a faster schedule in the foreground and must settle down in Always On. Apple's article on timelines explains the low-frequency mode: the system may ask for future dates and batch them. If your view cannot be computed from a future date, it cannot be correct on Always On. A countdown can. A live heart-rate animation cannot, unless a workout session is the one producing samples.
+
+<Callout title="Where people stall">
+
+They use `Timer.publish(every: 1)` and keep the app awake. Battery life falls over, and Always On still looks wrong because the timer does not run the way they expect in the dimmed state. Compute from `context.date`. Also, they show seconds for a 25-minute timer. Minutes are the glance.
+
+</Callout>
+
+## Exercise
+
+Given a fixed `endsAt`, show the remaining minutes. Advance the Simulator clock, or wait, and confirm the label changes without a button. Add a branch that shows "Done" after the end date and does not go negative.
+
+<Solution>
+
+`timeIntervalSince` is negative after the end. The `remaining > 0` check covers it. Use `.everyMinute` so you are not promising seconds you do not display. If the label stays frozen, the timeline is not in the body that is on screen, or you captured `Date()` once in `@State` and ignored `context.date`. Read `context.date` inside the timeline closure.
+
+</Solution>

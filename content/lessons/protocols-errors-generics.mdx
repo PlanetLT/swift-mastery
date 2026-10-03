@@ -1,0 +1,104 @@
+---
+title: Protocols, errors, and the generics you need
+slug: protocols-errors-generics
+track: foundation
+level: beginner
+order: 7
+minutes: 18
+summary: A protocol for a shared capability, throws for failure that is not absence, and a generic only when two types would otherwise copy the function.
+exit:
+  - "You can declare a protocol and adopt it on a struct."
+  - "You can throw an error and handle it with do/catch."
+  - "You can write one function that works on an array of any Equatable element."
+sources:
+  - swift-protocols
+  - swift-errors
+  - swift-generics
+  - api-design
+---
+
+Three tools keep a growing app from becoming a pile of special cases. A protocol names a capability. An error names a failure the caller must notice. A generic writes an algorithm once and keeps the types.
+
+You do not need protocol-oriented architecture on day seven. You need to read these shapes, because SwiftUI is full of them.
+
+## A small protocol and a real error
+
+```swift
+enum SaveFailure: Error {
+    case emptyTitle
+    case tooLong(limit: Int)
+}
+
+protocol Summarizable {
+    var summary: String { get }
+}
+
+struct LessonDraft: Summarizable {
+    var title: String
+    var summary: String { title }
+}
+
+func validatedTitle(_ title: String) throws -> String {
+    let trimmed = title.trimmingCharacters(in: .whitespacesAndNewlines)
+    guard trimmed.isEmpty == false else { throw SaveFailure.emptyTitle }
+    guard trimmed.count <= 80 else { throw SaveFailure.tooLong(limit: 80) }
+    return trimmed
+}
+```
+
+Call it with `try`. Handle it where you can say something useful.
+
+```swift
+func headline(for raw: String) -> String {
+    do {
+        return try validatedTitle(raw)
+    } catch SaveFailure.emptyTitle {
+        return "Untitled"
+    } catch {
+        return "Title needs a trim"
+    }
+}
+```
+
+Optionals were for absence. Errors are for a reason. "The title was empty" is a reason. Don't encode that as `nil` if the caller needs the reason.
+
+## One function, many element types
+
+```swift
+func firstMatch<Element: Equatable>(_ items: [Element], target: Element) -> Element? {
+    items.first { $0 == target }
+}
+```
+
+`Element: Equatable` means the function only accepts types that can be compared with `==`. `String` and `Int` both qualify. You did not write the function twice.
+
+<Callout title="Where people stall">
+
+They invent a protocol for a single type, or they `try!` to skip the catch. `try!` is a force unwrap for errors. It belongs in a prototype you are about to delete, not in an app a person will launch.
+
+</Callout>
+
+## Exercise
+
+Add `case blank` handling is already there. Write `wordCount(in:)` that throws `SaveFailure.emptyTitle` for a blank string and otherwise returns the number of words. Call it from a `do` block and print both outcomes.
+
+<Solution>
+
+```swift
+func wordCount(in text: String) throws -> Int {
+    let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+    guard trimmed.isEmpty == false else { throw SaveFailure.emptyTitle }
+    return trimmed.split(separator: " ").count
+}
+
+do {
+    print(try wordCount(in: "One language"))
+    print(try wordCount(in: "   "))
+} catch {
+    print("Could not count: \(error)")
+}
+```
+
+The second call never returns a number. The catch runs. That is the contract.
+
+</Solution>

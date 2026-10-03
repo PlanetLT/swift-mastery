@@ -1,0 +1,46 @@
+---
+title: Five seconds and a Smart Stack
+slug: five-seconds-and-a-stack
+track: watch
+level: professional
+order: 11
+minutes: 16
+summary: Ship a watch experience that makes sense in one glance, appears in the Smart Stack when it is relevant, and treats health data as a privilege.
+exit:
+  - "You can judge your app by a five-second test."
+  - "You can describe relevance for a Smart Stack widget."
+  - "You can list the privacy and review checks before you upload."
+sources:
+  - wwdc-watchos-26
+  - widgetkit
+  - app-review
+  - health-privacy
+---
+
+The professional test for a watch app is harsh and fair. Hand someone the watch, or play the complication, and look away for five seconds. They should be able to say what they saw. If they need the iPhone app open beside them to explain it, the watch target is a mirror, not a product.
+
+The Smart Stack is the list of widgets above the watch face. Relevance is how you tell the system when your widget is worth offering. A study widget is relevant at the time the person chose to study, not at 3 a.m. WidgetKit's relevance APIs, and the watchOS 26 session on the stack and controls, are the current maps. Controls are for an action from the system UI, like marking a lesson done, when that action is real. Do not add a control that only opens a menu.
+
+## The ship list
+
+Run on a current watch Simulator and, if you can, on a watch that matches the architecture in this year's release notes. Confirm the complication, the glance, and the empty state. Confirm a denied notification permission and a denied HealthKit permission do not trap the app. Confirm the phone can be unreachable and the last title still shows.
+
+App Review applies, including the design guidelines and the health privacy rules if you touched HealthKit. The privacy manifest and the purpose strings must match the binary, as they did for the iPhone. An independent watch app has its own listing details. A companion is reviewed with the iOS app. Know which one you are uploading.
+
+Write the five-second script in the repo: the state of the data, what the face shows, what the app shows if they tap, and what you refuse to show.
+
+<Callout title="Where people stall">
+
+They pass the test by explaining the screen to the reviewer in person. The screen has to explain itself. They also mark every hour as relevant, so the Smart Stack learns to ignore them. Relevance is a promise. Break it and the system stops offering you.
+
+</Callout>
+
+## Exercise
+
+Run the five-second test on a classmate or on a recording you watch muted. Note the first word they say. If it is not the fact you intended, change the complication or the root view, not the explanation. Then write the relevance rule in one sentence and the privacy types you request, which may be none.
+
+<Solution>
+
+A passing script: "At 8:00 the rectangular complication reads Optionals. They tap, see Done, and the stack will not suggest the widget overnight." If they say "there's a lot of text," you failed, and the fix is fewer words. Relevance: "Relevant from 15 minutes before the scheduled study time until the lesson is marked done." Privacy: repeat the lists from the health lesson. Upload only after this script is true in the Simulator you just ran.
+
+</Solution>

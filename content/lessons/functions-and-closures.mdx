@@ -1,0 +1,84 @@
+---
+title: Functions, closures, and the values you pass
+slug: functions-and-closures
+track: foundation
+level: beginner
+order: 5
+minutes: 16
+summary: Argument labels, returned values, and closures you can hand to sorted, filter, and later to SwiftUI.
+exit:
+  - "You can write a function whose call site reads as a sentence."
+  - "You can pass a closure to sorted and name the arguments when the body is long."
+  - "You can tell a function type from the value it returns."
+sources:
+  - swift-functions
+  - swift-closures
+  - api-design
+  - hws-sixty
+---
+
+Swift function names carry the argument labels. `move(from:to:)` reads like English at the call. That is the API Design Guidelines, and Apple's frameworks follow them. Yours should too.
+
+## A function with a sentence at the call
+
+```swift
+func move(_ item: String, from source: String, to destination: String) -> String {
+    "Moved \(item) from \(source) to \(destination)"
+}
+
+let line = move("Draft", from: "iPhone", to: "Mac")
+```
+
+The blank label `_` is for the first parameter when the function name already says what it is. Do not hide every label. `move(item:source:destination:)` is harder to read than the version above.
+
+A closure is a function you can store and pass.
+
+```swift
+let titles = ["Watch", "iPhone", "Mac"]
+let ordered = titles.sorted { lhs, rhs in
+    lhs < rhs
+}
+let short = titles.filter { $0.count < 6 }
+```
+
+`sorted` wants a function of type `(String, String) -> Bool`. You did not have to write that type. The compiler built it from the closure. When you see a SwiftUI modifier that takes a trailing closure, it is this same idea.
+
+## Capture, lightly
+
+```swift
+func makePrefixer(prefix: String) -> (String) -> String {
+    return { word in
+        prefix + " " + word
+    }
+}
+
+let watchLabel = makePrefixer(prefix: "Watch")
+let sample = watchLabel("glance")
+```
+
+The returned closure remembers `prefix`. That memory is a capture. It is useful, and it is also how a view accidentally keeps a huge object alive. You will meet that again with tasks. For now, notice that the closure outlives `makePrefixer`.
+
+<Callout title="Where people stall">
+
+They write every closure as `$0` and `$1` across five lines. Or they mark every closure `@escaping` because a compiler note mentioned the word. Trailing closures that leave the function immediately are not escaping. Name the parameters when there is more than one line of work.
+
+</Callout>
+
+## Exercise
+
+Write `describe(count:of:)` so the call `describe(3, of: "lesson")` returns `"3 lessons"` and the call with `1` returns `"1 lesson"`. Then sort an array of those strings by length, shortest first.
+
+<Solution>
+
+```swift
+func describe(_ count: Int, of noun: String) -> String {
+    count == 1 ? "1 \(noun)" : "\(count) \(noun)s"
+}
+
+let lines = [describe(3, of: "lesson"), describe(1, of: "lesson")]
+let byLength = lines.sorted { $0.count < $1.count }
+```
+
+The plural rule here is English and naive. Real apps use stringsdict or a string catalog, which the iPhone track covers. The function shape is the point today.
+
+</Solution>

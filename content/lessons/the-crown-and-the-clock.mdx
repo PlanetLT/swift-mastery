@@ -1,0 +1,70 @@
+---
+title: The crown and the clock
+slug: the-crown-and-the-clock
+track: watch
+level: beginner
+order: 3
+minutes: 14
+summary: Use the Digital Crown for a value the person adjusts, and respect the fact that a watch is a clock first.
+exit:
+  - "You can bind a value to the Digital Crown."
+  - "You can keep the adjustment useful across a small range."
+  - "You can say why a watch app should get out of the way quickly."
+sources:
+  - digital-crown
+  - hig-watch
+  - swiftui
+  - watchos-docs
+---
+
+The Digital Crown is the precise input on the watch. Scrolling a list is the default. When the person is choosing a number, bind that number to the crown instead of building tiny plus and minus buttons.
+
+The watch is also a clock. Your app is a guest. Long sessions need a reason, such as a workout. A study reminder does not.
+
+## A number on the crown
+
+```swift
+import SwiftUI
+
+struct MinutesPicker: View {
+    @State private var minutes = 10.0
+
+    var body: some View {
+        VStack {
+            Text("\(Int(minutes)) min")
+                .font(.title2)
+            Text("Study")
+                .foregroundStyle(.secondary)
+        }
+        .focusable()
+        .digitalCrownRotation(
+            $minutes,
+            from: 5,
+            through: 30,
+            by: 5,
+            sensitivity: .medium,
+            isContinuous: false
+        )
+    }
+}
+```
+
+The range and the stride are the design. A crown that can pick 1 through 500 is a tiny, annoying slider. Five-minute steps from 5 to 30 match a study timer. `focusable` is required so the crown has a target.
+
+When the person lowers the wrist, your app will leave the foreground quickly unless you have a system reason to stay. Plan for that. Save the value as they change it, not when they press a Save that they will never reach.
+
+<Callout title="Where people stall">
+
+They forget `.focusable()` and the crown does nothing. Or they use the crown and also a slider, and the two fight. One control. Also, the Simulator's crown is a drag on the crown image. If you only test with clicks, you will miss the stride feeling. Drag it.
+
+</Callout>
+
+## Exercise
+
+Build the minutes picker. Persist the value with `@AppStorage` so a relaunch keeps it. Add no second control.
+
+<Solution>
+
+`@AppStorage("studyMinutes") private var minutes = 10.0` replaces `@State` if the type matches what `AppStorage` supports. If a `Double` binding complains on your SDK, store `Int` and bind the crown to a double you sync in `onChange`. Relaunch the Simulator app. The number should survive. If the crown still scrolls the page, the view is not focused. Tap the number first.
+
+</Solution>

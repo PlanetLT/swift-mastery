@@ -1,0 +1,65 @@
+---
+title: Taps on the wrist
+slug: taps-on-the-wrist
+track: watch
+level: intermediate
+order: 5
+minutes: 14
+summary: Local notifications on watchOS, action buttons, and the decision to stay quiet.
+exit:
+  - "You can schedule a local notification that the watch can show."
+  - "You can add one action to that notification."
+  - "You can explain when a tap is worse than a complication."
+sources:
+  - user-notifications
+  - hig-watch
+  - watchos-docs
+  - app-review
+---
+
+A tap on the wrist is more expensive than a banner on a phone. People feel it. Use a notification when a moment matters: the study time they asked for, the end of a timer they started. Use a complication when the information can wait until they look.
+
+The User Notifications framework is the same family you used on iPhone. The watch has opinions about delivery. Short copy wins. One action is plenty: "Done" or "Snooze," not a menu of five.
+
+## A short alert
+
+```swift
+import UserNotifications
+
+func scheduleWristReminder() async throws {
+    let center = UNUserNotificationCenter.current()
+    let granted = try await center.requestAuthorization(options: [.alert, .sound])
+    guard granted else { return }
+
+    let content = UNMutableNotificationContent()
+    content.title = "Study"
+    content.body = "10 minutes."
+    content.categoryIdentifier = "study.actions"
+
+    let done = UNNotificationAction(identifier: "done", title: "Done", options: [.foreground])
+    let category = UNNotificationCategory(identifier: "study.actions", actions: [done], intentIdentifiers: [])
+    center.setNotificationCategories([category])
+
+    let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 5, repeats: false)
+    let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
+    try await center.add(request)
+}
+```
+
+Five seconds is for the Simulator. A real reminder uses a calendar trigger, as on iPhone. Handle the action in the notification delegate or the SwiftUI equivalent your SDK documents. If you mark the action `.foreground`, you are asking to open the app. That should be rare. A background action that marks the lesson done is kinder.
+
+<Callout title="Where people stall">
+
+They mirror every iPhone notification onto the watch, including marketing. The watch becomes something people take off. They also write a body the length of a paragraph. The title is the message. The body is a detail, and it may be truncated.
+
+</Callout>
+
+## Exercise
+
+Schedule a notification five seconds out. Include a Done action. When it fires, you can read the title without raising your wrist in the Simulator's notification UI. If the text does not fit, cut it.
+
+<Solution>
+
+Background the watch app before the trigger, or the banner may be suppressed while you are in the app. Register the category before adding the request. If Done does not appear, the category identifier on the content and the category you registered differ. Make them the same string. Then replace the five-second trigger before you call the feature finished.
+
+</Solution>

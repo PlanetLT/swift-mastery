@@ -1,0 +1,46 @@
+---
+title: The sandbox you declare
+slug: the-sandbox-you-declare
+track: mac
+level: advanced
+order: 9
+minutes: 15
+summary: A Mac App Store app lives in a container. Ask for the files you need, and do not keep broad disk access out of habit.
+exit:
+  - "You can explain what the App Sandbox prevents."
+  - "You can open a file the person picked with a security-scoped bookmark when you must reopen it."
+  - "You can name an entitlement your study app does not need."
+sources:
+  - sandbox
+  - entitlements
+  - document-group
+  - hig-macos
+---
+
+A sandboxed Mac app cannot wander the disk. It can see its container, and it can see files the person hands it through an open panel or a drag. That is the Mac App Store rule, and it is a good rule for a direct-download app too.
+
+Turn the sandbox on while you develop, not the night before you ship. File access bugs are quieter than crashes and more embarrassing.
+
+## Access you were given
+
+When the person opens a document through `DocumentGroup`, the system grants access for that file. If you need to reopen it later without asking again, store a security-scoped bookmark and start and stop access around the use. Apple's sandbox documentation describes the bookmark APIs. Read them before you store a raw path. A path string will not open next week.
+
+Entitlements are the switches: user-selected files, downloads folder, network client. Enable the ones the feature uses. A study app that edits documents the person opens needs user-selected file access. It does not need access to the entire home folder. Reviewers and notarization both look at what you asked for.
+
+Temporary exception entitlements exist and are a conversation with App Review, not a default. If you think you need one, you probably want a document-based design instead.
+
+<Callout title="Where people stall">
+
+They develop with the sandbox off, then turn it on and every save fails. Or they call `startAccessingSecurityScopedResource` and never stop, and hold access forever. Pair the calls. Also, a command-line tool you spawn does not inherit your intentions. The sandbox applies to the app. A helper needs its own story.
+
+</Callout>
+
+## Exercise
+
+Turn on App Sandbox for your document app. Open a file from the Desktop, edit, and save. Quit, relaunch, and open it again from the Open Recent menu. If you stored a path yourself, replace that path with the document system's recent list before you invent bookmarks.
+
+<Solution>
+
+The Signing and Capabilities tab adds the App Sandbox entitlement. `DocumentGroup` already participates in the open panel and recent documents. If save fails, the error is usually a missing read-write entitlement for user-selected files. Check the entitlement is read-write, not read-only. You do not need a bookmark until you access the file outside the document scene.
+
+</Solution>

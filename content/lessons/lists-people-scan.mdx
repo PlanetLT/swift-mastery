@@ -1,0 +1,90 @@
+---
+title: Lists people can scan
+slug: lists-people-scan
+track: ios
+level: beginner
+order: 2
+minutes: 15
+summary: Sections, swipe actions, and empty states for a list that is honest when it has data and when it does not.
+exit:
+  - "You can section a list and swipe to delete a row."
+  - "You can show an empty state that tells the person what to do next."
+  - "You can keep row identity stable while titles change."
+sources:
+  - list
+  - hig-ios
+  - swiftui-tutorials
+  - hws-100
+---
+
+People scan an iPhone list. They do not read it like a page. A row needs a title, one piece of secondary text, and a way to act. Sections are for a real grouping, not for decoration.
+
+## Rows, sections, and nothing
+
+```swift
+import SwiftUI
+
+struct TaskRow: Identifiable {
+    let id: UUID
+    var title: String
+    var isToday: Bool
+}
+
+struct TaskList: View {
+    @State private var tasks: [TaskRow] = [
+        TaskRow(id: UUID(), title: "Read optionals", isToday: true),
+        TaskRow(id: UUID(), title: "Run the Simulator", isToday: false),
+    ]
+
+    var body: some View {
+        NavigationStack {
+            Group {
+                if tasks.isEmpty {
+                    ContentUnavailableView("No tasks", systemImage: "checklist", description: Text("Add one when you are ready."))
+                } else {
+                    List {
+                        Section("Today") {
+                            ForEach(tasks.filter(\.isToday)) { task in
+                                Text(task.title)
+                            }
+                        }
+                        Section("Later") {
+                            ForEach(tasks.filter { $0.isToday == false }) { task in
+                                Text(task.title)
+                            }
+                        }
+                    }
+                    .listStyle(.insetGrouped)
+                }
+            }
+            .navigationTitle("Tasks")
+        }
+    }
+}
+```
+
+Delete by id, not by the title string.
+
+```swift
+.onDelete { offsets in
+    // Prefer deleting from the source array by id.
+}
+```
+
+A cleaner pattern stores one array and derives sections, then removes with `tasks.removeAll { $0.id == id }`. Swipe actions use `.swipeActions` on the row when you need more than delete.
+
+<Callout title="Where people stall">
+
+They filter into new arrays of values that lost their ids, then deletion removes the wrong row. Or they hide the empty list and show a blank screen. A blank screen looks broken. `ContentUnavailableView` looks intentional.
+
+</Callout>
+
+## Exercise
+
+Add a swipe action that moves a task between Today and Later by flipping `isToday`. Confirm a task with a duplicate title still moves the row you touched.
+
+<Solution>
+
+Put `.swipeActions` on each row and call a method `toggleToday(id:)`. Find the index with `tasks.firstIndex { $0.id == id }` and flip the Boolean there. Because both sections read the same array, the row changes section on the next update. Duplicate titles stay distinct because the id did not change.
+
+</Solution>

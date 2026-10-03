@@ -1,0 +1,59 @@
+---
+title: Many windows, one model
+slug: many-windows-one-model
+track: mac
+level: advanced
+order: 7
+minutes: 16
+summary: Share the library across windows, and keep each window's selection to itself.
+exit:
+  - "You can open two windows on the same lessons."
+  - "You can give each window its own selection."
+  - "You can change a title in one window and see it in the other."
+sources:
+  - scene
+  - observation
+  - wwdc-swiftui-mac
+  - swiftdata
+---
+
+A Mac user will choose File, New Window, and expect a second view, not a second copy of the database. Shared data, per-window selection. That split is the advanced Mac skill.
+
+SwiftData's model container, created once on the scene, is shared by windows of that group. `@Query` in each window reads the same store. `@State` declared inside the window's content view is per window. Put selection there. Put the lessons in the store or in an observable object created once and passed through the environment from the app.
+
+## What is shared, what is not
+
+```swift
+import SwiftData
+import SwiftUI
+
+@main
+struct DeskApp: App {
+    var body: some Scene {
+        WindowGroup {
+            DeskSplit()
+        }
+        .modelContainer(for: DeskLesson.self)
+    }
+}
+```
+
+`DeskSplit` holds `@State private var selection: DeskLesson.ID?`. Two windows, two selections. Both queries see a new lesson inserted in either window, because there is one store.
+
+If you instead put the array in a global mutable without isolation, two windows will race. The concurrency lesson from the iPhone track applies here. The model context is the synchronization point SwiftData gives you. Stay on the main actor when you mutate it from SwiftUI.
+
+<Callout title="Where people stall">
+
+They store selection in the SwiftData model as "the selected lesson," so both windows jump together. Selection is interface state. It does not belong in the file or the database unless the product is "reopen what I had selected," and even then it is per window scene, which SwiftUI can restore more carefully than a single Boolean on the model.
+
+</Callout>
+
+## Exercise
+
+Open two windows. Select a different lesson in each. Rename the lesson in window one. Window two's row updates, and its selection stays put if it was a different id.
+
+<Solution>
+
+Confirm the model container is attached to the `WindowGroup` and not recreated inside each view. Rename by editing the model object's property. The other window's `@Query` refreshes. If both selections change, you stored one selection above the window content. Move `@State` down into the view that `WindowGroup` creates, which is a new value per window.
+
+</Solution>

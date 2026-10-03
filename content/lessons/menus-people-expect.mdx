@@ -1,0 +1,77 @@
+---
+title: Menus people already expect
+slug: menus-people-expect
+track: mac
+level: beginner
+order: 3
+minutes: 14
+summary: File, Edit, and View already mean something. Add your actions where those meanings live.
+exit:
+  - "You can place a command in an existing menu group."
+  - "You can disable a command when nothing is selected."
+  - "You can name one system shortcut you should not steal."
+sources:
+  - commands
+  - hig-macos
+  - macos-pathway
+  - sundell
+---
+
+People on a Mac try Command-N, Command-W, Command-F, and Command-comma before they hunt for your buttons. Those shortcuts already belong to New, Close, Find, and Settings. Put your behavior behind the expectations, or pick a shortcut that does not fight them.
+
+## Add, do not invent a parallel menu
+
+```swift
+import SwiftUI
+
+struct DeskCommands: Commands {
+    var hasSelection: Bool
+    var delete: () -> Void
+
+    var body: some Commands {
+        CommandGroup(after: .pasteboard) {
+            Button("Delete Lesson") { delete() }
+                .keyboardShortcut(.delete, modifiers: [.command])
+                .disabled(hasSelection == false)
+        }
+    }
+}
+```
+
+Attach `DeskCommands` with `.commands` on the `WindowGroup`. Disabling the item when nothing is selected is part of the Mac feel. A menu item that does nothing when clicked feels broken. A disabled item teaches the rule.
+
+Command-Q quits. Command-W closes a window. If your app has one window and closing it should quit, follow the platform default for SwiftUI apps rather than fighting `Command-W`. Document the choice if you change it.
+
+<Callout title="Where people stall">
+
+They create a custom "Actions" menu for New, Open, and Save, and leave the File menu empty of those words. People will not look there. They also bind Command-F to a feature named Finish. Find owns Command-F.
+
+</Callout>
+
+<Surfaces>
+<Surface name="iPhone">
+
+There is no menu bar. The same action is a toolbar button or a swipe. Keep the verb identical: Delete should not become Remove on one platform and Destroy on another.
+
+</Surface>
+<Surface name="Mac">
+
+The menu is the index of the app. If it is not in a menu, it is hidden.
+
+</Surface>
+<Surface name="Watch">
+
+There is no room for this menu. The watch gets one destructive action, confirmed, or none.
+
+</Surface>
+</Surfaces>
+
+## Exercise
+
+Add Delete to the menu, disabled with an empty selection. Add a second command, "Focus Sidebar", under the View menu area, with a shortcut that is not Command-F, Command-N, Command-C, or Command-V.
+
+<Solution>
+
+Use `CommandGroup(before: .sidebar)` if your SDK exposes that placement, or `CommandMenu` only when the action truly belongs in a new menu. A safe shortcut is Command-Option-S for the sidebar, which many Mac apps already use, so check the system's View menu first and prefer the built-in sidebar toggle if `NavigationSplitView` already provides one. Do not duplicate it.
+
+</Solution>

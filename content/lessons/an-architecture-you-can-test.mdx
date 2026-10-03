@@ -1,0 +1,82 @@
+---
+title: An architecture you can test
+slug: an-architecture-you-can-test
+track: ios
+level: advanced
+order: 9
+minutes: 18
+summary: Keep rules in a small type the view calls, so a test can run the rules without a Simulator.
+exit:
+  - "You can move a decision out of a button action into a method on a model."
+  - "You can write an XCTest that calls that method."
+  - "You can name what stays in the view: layout, and calls into the model."
+sources:
+  - observation
+  - xctest
+  - sundell
+  - stanford
+---
+
+A professional iPhone app is still SwiftUI. The difference is that the rules do not live inside button closures where only a human can check them. Put the rules in a type. Let the view call the type. Test the type.
+
+You do not need a framework named after a pattern. You need a seam.
+
+## Rules beside the view
+
+```swift
+import Observation
+
+struct LessonDraft: Equatable {
+    var title: String
+    var minutes: Int
+}
+
+@Observable
+final class Planner {
+    private(set) var drafts: [LessonDraft] = []
+
+    func add(title: String, minutes: Int) -> Bool {
+        let trimmed = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmed.isEmpty == false, minutes > 0, minutes < 240 else {
+            return false
+        }
+        drafts.append(LessonDraft(title: trimmed, minutes: minutes))
+        return true
+    }
+}
+```
+
+The view holds `@State private var planner = Planner()` and calls `planner.add` from Save. It does not trim strings itself. If the function returns false, the view shows a sentence.
+
+The test target can create a `Planner` with no SwiftUI import required beyond what the type itself imports. This type imports Observation. If you want the rules in a pure struct with no observation, that is even easier to test. Observation is for the screen. The decision can be a free function `validate(title:minutes:)`.
+
+```swift
+import XCTest
+@testable import YourApp
+
+final class PlannerTests: XCTestCase {
+    func testRejectsBlankTitle() {
+        let planner = Planner()
+        XCTAssertFalse(planner.add(title: "   ", minutes: 10))
+        XCTAssertTrue(planner.drafts.isEmpty)
+    }
+}
+```
+
+Replace `YourApp` with the product name. `@testable` sees internal methods. You do not have to make everything public.
+
+<Callout title="Where people stall">
+
+They adopt a four-layer architecture from a blog before they have two screens, and then they cannot find the bug. Or they "test" by printing in the Simulator. One XCTest that would have caught a blank title is worth more than a diagram. Stanford's course is a good place to see a larger app built with a consistent object graph. Copy the discipline, not a folder template you do not understand.
+
+</Callout>
+
+## Exercise
+
+Add a rule: titles must be unique after trimming, compared case-insensitively. Write two tests, one for a duplicate and one for a distinct title. Keep the view's Save button as a single call.
+
+<Solution>
+
+Compare with `trimmed.lowercased()` against `drafts.map { $0.title.lowercased() }`. Return false on a duplicate and leave the array unchanged. The tests construct a planner, add "Swift", then assert that " swift " fails and "SwiftData" succeeds. No view is loaded.
+
+</Solution>

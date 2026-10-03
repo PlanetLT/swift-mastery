@@ -1,0 +1,96 @@
+---
+title: Collections that fit the problem
+slug: collections-that-fit
+track: foundation
+level: beginner
+order: 4
+minutes: 14
+summary: Pick an array, a set, or a dictionary because of the question you ask, not because a tutorial used brackets.
+exit:
+  - "You can add, find, and remove a value in each of the three collections."
+  - "You can say why a set is the wrong home for a ranked list."
+  - "You can build a dictionary from an array of pairs without a nested loop."
+sources:
+  - swift-collections
+  - swift-tour
+  - api-design
+---
+
+Swift gives you three everyday collections. The right one is the one whose question is cheap.
+
+An array keeps order and allows duplicates. A set keeps unique values and does not promise order. A dictionary maps a key to one value.
+
+## Three questions
+
+```swift
+struct LessonRef: Hashable {
+    var slug: String
+}
+
+var syllabus: [LessonRef] = [
+    LessonRef(slug: "optionals-without-fear"),
+    LessonRef(slug: "collections-that-fit"),
+]
+
+var finished: Set<String> = ["optionals-without-fear"]
+finished.insert("collections-that-fit")
+
+var minutes: [String: Int] = [
+    "optionals-without-fear": 15,
+    "collections-that-fit": 14,
+]
+
+let stillOpen = syllabus.filter { finished.contains($0.slug) == false }
+let total = minutes.values.reduce(0, +)
+```
+
+`filter` and `reduce` are the loops you will see in SwiftUI lists later. `$0` is the first closure argument. Spell the name when the line gets hard to read: `filter { lesson in ... }`.
+
+Looking up a dictionary returns an optional, because the key might be absent. That is the previous lesson, still in force.
+
+```swift
+let planned = minutes["optionals-without-fear"] ?? 0
+```
+
+<Callout title="Where people stall">
+
+They store a to-do list in a set, then cannot show it in the order the person created it. Or they store unique tags in an array and write a slow search to prevent duplicates. Order means array. Uniqueness means set. Lookup by a stable id means dictionary.
+
+</Callout>
+
+<Surfaces>
+<Surface name="iPhone">
+
+A `List` wants an array. Selection can be a set of ids.
+
+</Surface>
+<Surface name="Mac">
+
+A table wants an array too. Sort it before display. Do not expect a set to remember the click order.
+
+</Surface>
+<Surface name="Watch">
+
+Show a slice of the array, often one element. The rest can stay in memory without being on screen.
+
+</Surface>
+</Surfaces>
+
+## Exercise
+
+Start with an array of lesson slugs that contains one duplicate. Produce a set of unique slugs, and a dictionary that counts how many times each slug appeared.
+
+<Solution>
+
+```swift
+let slugs = ["a", "b", "a"]
+let unique = Set(slugs)
+var counts: [String: Int] = [:]
+for slug in slugs {
+    counts[slug, default: 0] += 1
+}
+```
+
+`default:` on the subscript creates the zero the first time you see a slug. That is clearer than an `if let` for a counter.
+
+</Solution>

@@ -1,0 +1,93 @@
+---
+title: Persist the list with SwiftData
+slug: persist-the-list
+track: foundation
+level: beginner
+order: 11
+minutes: 18
+summary: Move the in-memory array into a SwiftData model so the list is still there after you stop the app.
+exit:
+  - "You can mark a class @Model and insert it into a model context."
+  - "You can show a @Query in a List."
+  - "You can quit the app, run it again, and see the same rows."
+sources:
+  - swiftdata
+  - model-data
+  - develop-in-swift
+  - wwdc-codealong
+---
+
+An array in `@State` dies when the process dies. SwiftData is Apple's current way to keep a model across launches. It is the tool this guide uses. You will meet Core Data in old samples. You do not need it to finish these tracks.
+
+SwiftData models are classes. That is a real exception to "structs before classes." The fields you store can still be simple values.
+
+## A model, a container, a query
+
+```swift
+import SwiftData
+import SwiftUI
+
+@Model
+final class StudyNote {
+    var title: String
+    var createdAt: Date
+
+    init(title: String, createdAt: Date = .now) {
+        self.title = title
+        self.createdAt = createdAt
+    }
+}
+
+@main
+struct StudyApp: App {
+    var body: some Scene {
+        WindowGroup {
+            NotesScreen()
+        }
+        .modelContainer(for: StudyNote.self)
+    }
+}
+
+struct NotesScreen: View {
+    @Environment(\.modelContext) private var context
+    @Query(sort: \StudyNote.createdAt, order: .reverse) private var notes: [StudyNote]
+
+    var body: some View {
+        NavigationStack {
+            List(notes) { note in
+                Text(note.title)
+            }
+            .toolbar {
+                Button("Add") {
+                    context.insert(StudyNote(title: "New note"))
+                }
+            }
+            .overlay {
+                if notes.isEmpty {
+                    ContentUnavailableView("No notes", systemImage: "note.text")
+                }
+            }
+        }
+    }
+}
+```
+
+`modelContainer` owns the store. `@Query` reads it and updates the view when the store changes. `insert` writes. You usually do not call `save` yourself for this simple case. The context saves.
+
+Delete with `context.delete(note)` from a `onDelete` handler or a button. Fetch only what the screen shows. A watch will not want this whole query later. The model can still live in a shared package.
+
+<Callout title="Where people stall">
+
+They change the model, run again, and SwiftData refuses to open the old store. During development, delete the app from the Simulator when you change the schema and you do not yet have a migration. They also create a second `modelContainer` in a preview and wonder why the app's data is missing. The preview has its own store unless you pass the same container.
+
+</Callout>
+
+## Exercise
+
+Add `isPinned: Bool` to `StudyNote`. Add a button that flips it. Sort pinned notes first. Relaunch and confirm the pin survived.
+
+<Solution>
+
+Add the property with a default in `init`. After the first schema change, delete the Simulator app once so the store can be recreated. Sort with a `SortDescriptor` array: pinned descending, then `createdAt` descending. Toggle with `note.isPinned.toggle()` on the model object from the button. Because the object is a SwiftData model, the query refreshes.
+
+</Solution>

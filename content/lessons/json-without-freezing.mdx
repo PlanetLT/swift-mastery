@@ -1,0 +1,91 @@
+---
+title: JSON without freezing the screen
+slug: json-without-freezing
+track: ios
+level: intermediate
+order: 5
+minutes: 18
+summary: Decode a small API with Codable and URLSession, and keep the interface responsive while the request is in flight.
+exit:
+  - "You can define a Codable struct that matches a JSON object."
+  - "You can fetch with URLSession in an async function."
+  - "You can show loading, success, and failure as three different screens."
+sources:
+  - urlsession
+  - swift-concurrency
+  - swiftui
+  - hws-100
+---
+
+A phone app that parses a file on the main thread feels stuck. The network call itself is already asynchronous. Your job is to decode off to the side and to publish a result the view can switch on.
+
+This lesson uses a public JSON document you can replace with your own API. The shape of the code will not change.
+
+## One request, three states
+
+```swift
+import SwiftUI
+
+struct RemoteLesson: Codable, Identifiable {
+    var id: Int
+    var title: String
+}
+
+enum LoadState {
+    case idle
+    case loading
+    case loaded([RemoteLesson])
+    case failed(String)
+}
+
+@Observable
+final class LessonLoader {
+    var state: LoadState = .idle
+
+    func load() async {
+        state = .loading
+        do {
+            let url = URL(string: "https://jsonplaceholder.typicode.com/posts")!
+            let (data, response) = try await URLSession.shared.data(from: url)
+            guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
+                state = .failed("The server did not return lessons.")
+                return
+            }
+            let decoded = try JSONDecoder().decode([RemoteLesson].self, from: data)
+            state = .loaded(Array(decoded.prefix(20)))
+        } catch {
+            state = .failed("Could not load lessons.")
+        }
+    }
+}
+```
+
+Call `load()` from `.task` on the view, not from `body`. `.task` starts when the view appears and cancels when it disappears. Switch on `state` to draw a `ProgressView`, a list, or a retry button.
+
+The URL force unwrap is acceptable only because the string is a literal you can see. A URL from a person is `URL(string:)` with a guard.
+
+Map JSON names with `CodingKeys` when the server says `user_id` and Swift should say `userID`. Do not name your Swift property `user_id` to match the server.
+
+<Callout title="Where people stall">
+
+They decode on a button action marked async and also update the view from a random queue by hand. `await` on `URLSession` already hops correctly for this API, and `@Observable` updates belong on the main actor. The advanced concurrency lesson will make that explicit. Today, if the UI updates, you are fine. If you see a purple runtime warning about publishing from a background thread, mark the loader `@MainActor`.
+
+</Callout>
+
+## Exercise
+
+Point the decoder at a JSON array you host, or keep the sample URL. Show only titles. Add a Retry button on failure that calls `load()` again. Ignore fields you do not display. `Codable` allows that when you decode a struct that simply omits them.
+
+<Solution>
+
+Add `title` and `id` only. Extra JSON keys are ignored by default. In the view:
+
+```swift
+case .failed(let message):
+    ContentUnavailableView(message, systemImage: "wifi.exclamationmark")
+    Button("Retry") { Task { await loader.load() } }
+```
+
+`.task { await loader.load() }` covers the first attempt. Retry is a second call. Set `state = .loading` at the top of `load` so the retry does not leave the error on screen.
+
+</Solution>

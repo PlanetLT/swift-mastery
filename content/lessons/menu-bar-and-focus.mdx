@@ -1,0 +1,61 @@
+---
+title: The menu bar, focus, and a document worth keeping
+slug: menu-bar-and-focus
+track: mac
+level: professional
+order: 11
+minutes: 16
+summary: A menu-bar extra for glanceable Mac status, a focus order that works without a pointer, and the document habit that keeps the app maintainable.
+exit:
+  - "You can add a MenuBarExtra that shows one status."
+  - "You can walk the main window with the keyboard only."
+  - "You can write a short architecture note another developer could follow."
+sources:
+  - menu-bar-extra
+  - hig-accessibility
+  - hig-macos
+  - apple-forums
+---
+
+Some Mac tools live in the menu bar: a timer, a sync status, the next lesson. `MenuBarExtra` is a scene for that. It is not a second copy of your whole window stuffed into a tiny panel. Show one status and one or two actions.
+
+The other professional habit on the Mac is focus. Turn on full keyboard access and walk the window. Every control you can click should be reachable, in an order that matches the reading order. Accessibility labels from the iPhone form lesson apply, and the focus ring is the extra Mac requirement.
+
+## A small extra
+
+```swift
+import SwiftUI
+
+struct StatusScene: Scene {
+    var body: some Scene {
+        MenuBarExtra("Study", systemImage: "book") {
+            Text("Next: Windows")
+            Button("Open Desk") {
+                NSApp.activate(ignoringOtherApps: true)
+            }
+            Divider()
+            Button("Quit") { NSApp.terminate(nil) }
+        }
+    }
+}
+```
+
+`NSApp` is AppKit. This file is macOS-only, which matches the previous lesson's boundary. The extra and the `WindowGroup` can live in the same `App` body as two scenes.
+
+Write a one-page note in the repo: where selection lives, where the document or SwiftData store lives, which target is allowed to import AppKit, and whether you ship on the store or with notarization. That note is the difference between a portfolio project and a project you can reopen in six months.
+
+<Callout title="Where people stall">
+
+They put a `Table` inside `MenuBarExtra` and wonder why it feels wrong. The panel is a menu. Keep it short. They also test accessibility by hovering with the pointer. Unplug the habit. Tab through the window from a cold launch.
+
+</Callout>
+
+## Exercise
+
+Add a menu-bar extra that shows the count of unfinished lessons and a button that opens the main window. Then tab through the main window and fix one focus or label bug you find. Update your architecture note with the sandbox and distribution choice from the previous lessons.
+
+<Solution>
+
+The count comes from the same model or query the window uses. If the extra shows zero while the window shows lessons, it created a second store. Share the model container. `NSApp.activate` brings your windows forward. For focus, set an accessibility label on any icon-only toolbar button, and remove a custom `.focusable(false)` you may have added while debugging. The architecture note should name the package or types, not retell the user interface.
+
+</Solution>

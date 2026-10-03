@@ -1,0 +1,123 @@
+---
+title: A Swift tour you can finish
+slug: a-tour-you-can-finish
+track: foundation
+level: beginner
+order: 2
+minutes: 16
+summary: Constants, types, strings, and control flow, written so you can read the rest of this guide without guessing.
+exit:
+  - "You can choose let or var and explain the choice."
+  - "You can write a function that returns a String from an Int."
+  - "You can read an if and a switch without translating them into another language first."
+sources:
+  - swift-tour
+  - swift-basics
+  - swift-pathway
+  - hws-sixty
+---
+
+Swift is a language you read aloud. Names are long on purpose. A call site should sound like a sentence. That habit matters more, this week, than any framework.
+
+Open a playground or a new Swift file. Type the samples. Reading them is not the exercise.
+
+## Values and types
+
+`let` names a value that will not be reassigned. `var` names one that will. Prefer `let` until the program forces a change.
+
+```swift
+let course = "Swift Mastery"
+var lessonCount = 1
+lessonCount += 1
+
+func label(for count: Int) -> String {
+    if count == 1 {
+        return "1 lesson"
+    }
+    return "\(count) lessons"
+}
+
+let banner = label(for: lessonCount)
+```
+
+The compiler infers `String` and `Int`. You can write the types when a reader would otherwise guess. String interpolation uses `\(` and `)` inside a string. In a playground, print `banner`.
+
+`if` and `switch` are expressions in modern Swift when every branch returns. You will see both styles. Start with the statement form above. It is the one every older sample uses.
+
+## A switch that covers the cases
+
+```swift
+enum Surface {
+    case phone
+    case mac
+    case watch
+}
+
+func sessionLength(on surface: Surface) -> String {
+    switch surface {
+    case .phone:
+        return "A few minutes"
+    case .mac:
+        return "A sitting"
+    case .watch:
+        return "A glance"
+    }
+}
+```
+
+If you add a case later and forget a branch, the compiler stops you. That is the feature. Do not add a `default` just to silence it when the cases are known.
+
+<Surfaces>
+<Surface name="iPhone">
+
+This `Surface` type is ordinary Swift. It will later decide which preview you show.
+
+</Surface>
+<Surface name="Mac">
+
+The same enum can title a window. Nothing here is a Mac API.
+
+</Surface>
+<Surface name="Watch">
+
+The same enum can pick a one-line complication. The type does not know about wrists yet.
+
+</Surface>
+</Surfaces>
+
+<Callout title="Where people stall">
+
+They write `var` for everything, then cannot tell which names are allowed to change. Or they force a type with `as!` because a tutorial from another language did. You do not need that cast for this lesson.
+
+</Callout>
+
+## Exercise
+
+Add a `case pad` and update `sessionLength` until the file compiles. Then write `greeting(name:)` that returns a string, and call it with your name.
+
+<Solution>
+
+```swift
+enum Surface {
+    case phone, mac, watch, pad
+}
+
+func sessionLength(on surface: Surface) -> String {
+    switch surface {
+    case .phone, .pad:
+        return "A few minutes"
+    case .mac:
+        return "A sitting"
+    case .watch:
+        return "A glance"
+    }
+}
+
+func greeting(name: String) -> String {
+    "Hello, \(name)"
+}
+```
+
+A function with a single expression can omit `return`. Use that only when the line stays obvious.
+
+</Solution>

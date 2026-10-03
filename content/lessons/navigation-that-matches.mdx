@@ -1,0 +1,93 @@
+---
+title: Navigation that matches the task
+slug: navigation-that-matches
+track: ios
+level: beginner
+order: 3
+minutes: 16
+summary: Choose a stack, a tab, or a sheet because of the job, and keep a path the person can predict.
+exit:
+  - "You can push a detail with NavigationStack and a value."
+  - "You can put two peer areas in a TabView."
+  - "You can explain when a sheet is a better fit than a push."
+sources:
+  - navigation
+  - wwdc-navigation-cookbook
+  - hig-ios
+  - swiftui
+---
+
+iPhone navigation has three shapes you will use constantly. A stack is a trail of related pages, with Back. A tab bar is a set of peer areas that do not belong inside each other. A sheet is a detour that must be finished or cancelled, like creating an item.
+
+If you pick the wrong one, the app feels clumsy even when the code is short.
+
+## Stack for a trail, tabs for peers
+
+```swift
+import SwiftUI
+
+struct PhoneHome: View {
+    var body: some View {
+        TabView {
+            Tab("Study", systemImage: "book") {
+                StudyStack()
+            }
+            Tab("Settings", systemImage: "gear") {
+                Text("Settings").padding()
+            }
+        }
+    }
+}
+
+struct StudyStack: View {
+    var body: some View {
+        NavigationStack {
+            List {
+                NavigationLink("Optionals", value: "optionals")
+            }
+            .navigationDestination(for: String.self) { slug in
+                Text(slug).navigationTitle(slug)
+            }
+            .navigationTitle("Study")
+        }
+    }
+}
+```
+
+`Tab` is the current tab API. Older code uses `tabItem` on each child of `TabView`. Both appear in the wild. New projects should follow the current documentation page for `TabView`, which this sample matches.
+
+A sheet covers the tab, does one job, and leaves. Do not push settings inside a study stack if settings is a peer of study. Do not sheet a whole second app.
+
+<Callout title="Where people stall">
+
+They nest a `NavigationStack` inside another `NavigationStack`, then show two navigation bars or a Back button that skips a page. One stack per tab is the usual shape. They also drive navigation with a pile of Booleans. A path of values, or `navigationDestination(for:)`, stays understandable when there are three kinds of detail.
+
+</Callout>
+
+<Surfaces>
+<Surface name="iPhone">
+
+Tabs on the bottom, stack inside each tab, sheet for create and compose.
+
+</Surface>
+<Surface name="Mac">
+
+Tabs often become a sidebar. Sheets become panels or separate windows. The Mac track rebuilds this choice.
+
+</Surface>
+<Surface name="Watch">
+
+There is no room for this tab bar plus a stack. You will cut it to one list.
+
+</Surface>
+</Surfaces>
+
+## Exercise
+
+Add a third destination type, an `Int` score, and a link that pushes it. Then present a "New lesson" sheet from the stack's toolbar without losing the tab bar underneath when the sheet dismisses.
+
+<Solution>
+
+Add `.navigationDestination(for: Int.self)` beside the string destination. SwiftUI picks the destination by type. The sheet attaches to the stack, not to an individual row, with `@State private var isNew = false` and `.sheet(isPresented:)`. Dismissing the sheet returns to the same tab because the `TabView` never went away.
+
+</Solution>

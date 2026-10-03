@@ -1,0 +1,67 @@
+---
+title: Stay current without chasing every headline
+slug: stay-current
+track: foundation
+level: intermediate
+order: 12
+minutes: 14
+summary: A yearly habit for release notes, a way to read older tutorials, and the order of sources this guide trusts.
+exit:
+  - "You can find the release notes for iOS, macOS, and watchOS."
+  - "You can translate ObservableObject and NavigationView when you meet them in an old sample."
+  - "You can name the order: docs, then one session, then one practice course."
+sources:
+  - updates
+  - ios-release-notes
+  - swift-blog
+  - wwdc-beginners
+---
+
+Apple ships a new SDK every year. A guide that pretends one snapshot is the last word becomes fiction. Your habit matters more than memorizing this year's modifier list.
+
+Once a year, when you install the new Xcode, read three short things before you adopt anything: the platform release notes for the devices you ship, the documentation updates page, and the Swift blog if the language version moved. Then run your app on the new SDK and fix what the compiler and the console actually report.
+
+## How to read a source that is older than your Xcode
+
+A lot of excellent teaching still uses the previous generation of APIs.
+
+- `ObservableObject`, `@Published`, and `@StateObject` map to `@Observable` and `@State` for the model.
+- `NavigationView` maps to `NavigationStack` on iPhone and Mac.
+- UIKit and AppKit samples are still valid when SwiftUI has no equivalent. Wrap them. Do not rewrite the world first.
+- A force unwrap in a demo is the author's shortcut, not a pattern.
+
+The SwiftUI team, in the WWDC26 beginners lab, gave the same advice this guide is built on: learn the language, learn state, ship small complete apps, and use the official tutorials as the spine. Community courses are repetition. They are not a second source of truth when an API signature has changed.
+
+<Surfaces>
+<Surface name="iPhone">
+
+Read the iOS release notes and the iOS pathway when the major version changes. Your layout is the first thing that will look wrong.
+
+</Surface>
+<Surface name="Mac">
+
+Read the macOS release notes. Windows, sandbox, and menu behavior move more quietly than phone UI and break more trust when they do.
+
+</Surface>
+<Surface name="Watch">
+
+Read the watchOS release notes, including architecture notes. A watch binary can need a new slice even when your Swift source did not change.
+
+</Surface>
+</Surfaces>
+
+<Callout title="Where people stall">
+
+They subscribe to every WWDC rumor and never finish a list that saves. Or they freeze a tutorial from 2021 and fight the compiler for a week. Finish the small app. When it breaks next year, the release notes are a shorter read than a new course.
+
+</Callout>
+
+## Exercise
+
+Open the documentation updates page and the release notes for one platform you care about. Write down one API you already used in this track and one you have not. You do not have to adopt the new one.
+
+<Solution>
+
+A useful note looks like this: "I used NavigationStack and SwiftData. The notes mention a newer widget API I have not tried. I will meet widgets on the iPhone track, not today." That sentence is the skill. Collecting tabs is not.
+
+</Solution>

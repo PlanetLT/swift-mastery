@@ -1,0 +1,74 @@
+---
+title: Relationships and languages
+slug: relationships-and-languages
+track: ios
+level: intermediate
+order: 8
+minutes: 17
+summary: Relate SwiftData models without stringly typed ids, and put every visible string in a catalog so another language can exist.
+exit:
+  - "You can model a parent and child in SwiftData and show both."
+  - "You can add a string catalog and a second language."
+  - "You can format a count so plural rules are not hand-written English."
+sources:
+  - swiftdata
+  - localization
+  - hig-ios
+  - develop-in-swift
+---
+
+A study app grows a second model fast: a course has lessons. Store that as a relationship, not as a copied title. And every word on screen should be a localized string, including the ones you are sure you will "add later." Later is how English gets welded into the binary.
+
+## A course owns lessons
+
+```swift
+import SwiftData
+
+@Model
+final class Course {
+    var title: String
+    @Relationship(deleteRule: .cascade, inverse: \LessonItem.course)
+    var lessons: [LessonItem] = []
+
+    init(title: String) {
+        self.title = title
+    }
+}
+
+@Model
+final class LessonItem {
+    var title: String
+    var course: Course?
+
+    init(title: String, course: Course) {
+        self.title = title
+        self.course = course
+    }
+}
+```
+
+Cascade means deleting a course deletes its lessons. That is a product decision. Say it in the interface if it would surprise someone. Inverse keeps both sides of the relationship honest.
+
+Show lessons with `course.lessons` in a detail view. Insert with `LessonItem(title:course:)` and `context.insert`. SwiftData links the relationship when you set `course`.
+
+## Strings that can move
+
+In the view, write `Text("Courses")` with a string literal. Xcode can extract literals into a String Catalog (`Localizable.xcstrings`). Add a language in the project, and fill in the translations. Use `String(localized:)` in model code that produces visible text.
+
+For counts, use a catalog plural or a localized format rather than `"\(n) lessons"` glued together. The foundation track warned that English plural rules are a trap. This is the fix.
+
+<Callout title="Where people stall">
+
+They concatenate translated pieces: a verb from one string and a noun from another. Word order changes in other languages. Translate a whole sentence, with the value interpolated by the catalog. They also forget that SwiftData relationship arrays are unordered unless they sort. Sort by a `createdAt` or an explicit index before display.
+
+</Callout>
+
+## Exercise
+
+Create two courses with two lessons each. Delete one course and confirm its lessons are gone and the other course remains. Add Spanish, or any second language you can check, for the navigation title and the empty-state sentence.
+
+<Solution>
+
+Cascade is already declared, so `context.delete(course)` removes the children on the next save. Verify in the UI, not by guessing. For the catalog, select the project, add the language, and use the Export Localizations flow if a translator will edit the file. A literal `Text("No courses yet")` appears in the catalog after you build. Translate that entry and switch the scheme's App Language to see it.
+
+</Solution>

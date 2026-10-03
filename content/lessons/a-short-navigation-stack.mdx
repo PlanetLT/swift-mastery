@@ -1,0 +1,67 @@
+---
+title: A short navigation stack
+slug: a-short-navigation-stack
+track: watch
+level: intermediate
+order: 4
+minutes: 14
+summary: One list, one detail, and a back gesture. Stop before the stack becomes an iPhone app.
+exit:
+  - "You can push a detail on watchOS with NavigationStack."
+  - "You can keep the list to a handful of rows."
+  - "You can put the primary action on the detail, not three layers down."
+sources:
+  - navigation
+  - building-watch
+  - hig-watch
+  - watchos-docs
+---
+
+watchOS can show a list and a detail. That is the deep end of watch navigation for most apps. A third level is usually a sign the information belongs on the phone.
+
+Use `NavigationStack` and `navigationDestination` as you did on iPhone. Some older watch articles still show `NavigationView`. Prefer the stack in new code, and check the current watchOS navigation docs if a modifier is marked unavailable.
+
+## List, then one page
+
+```swift
+import SwiftUI
+
+struct WatchLessons: View {
+    var titles: [String]
+
+    var body: some View {
+        NavigationStack {
+            List(titles, id: \.self) { title in
+                NavigationLink(title, value: title)
+            }
+            .navigationTitle("Study")
+            .navigationDestination(for: String.self) { title in
+                VStack {
+                    Text(title).font(.headline)
+                    Button("Mark done") {}
+                }
+            }
+        }
+    }
+}
+```
+
+Keep `titles` short. Five items a person recognizes is a watch list. Fifty is a search problem, and the watch is a bad place to type a search. If the library is large, the phone picks a short queue and the watch shows the queue.
+
+The back control is the system's. Do not draw your own.
+
+<Callout title="Where people stall">
+
+They present a sheet that presents a sheet. On a watch, modal piles are easy to get lost in and hard to dismiss with a gesture. Push one detail, or show one confirmation. They also reuse an iPhone `Form` with ten toggles. Settings of that size live on the phone.
+
+</Callout>
+
+## Exercise
+
+Show three lesson titles. Push a detail with Done. Done pops the detail and removes the title from the list. There is no edit screen.
+
+<Solution>
+
+Hold the titles in `@State` on the watch only for this exercise. Pass a closure into the destination, or use a `NavigationPath` you control. On Done, remove the title and set the path to empty. If Done only pops and leaves the row, the action was a `dismiss` without a model change. Do both.
+
+</Solution>

@@ -1,0 +1,66 @@
+---
+title: A glance, not a page
+slug: a-glance-not-a-page
+track: watch
+level: beginner
+order: 2
+minutes: 14
+summary: Design for a few seconds, large type, and one primary fact. Cut the iPhone screen until it fits.
+exit:
+  - "You can show one fact and one action on a watch screen."
+  - "You can explain why a paragraph fails on the wrist."
+  - "You can use a system text style that remains readable on a small face."
+sources:
+  - hig-watch
+  - watchos-pathway
+  - swiftui
+  - design-resources
+---
+
+People look at a watch for a moment, often while moving. The Human Interface Guidelines for watchOS say to put the crucial information up front. A paragraph, a tab bar, and a form are iPhone ideas. On the watch they become a refusal to choose.
+
+Your screen should answer one question. "What is the next lesson?" is a question. "Here is the whole syllabus, with minutes, status, and a search field" is not.
+
+## One fact, one action
+
+```swift
+import SwiftUI
+
+struct NextLesson: View {
+    var title: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("Next")
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+            Text(title)
+                .font(.headline)
+                .minimumScaleFactor(0.7)
+            Button("Done") {}
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal)
+    }
+}
+```
+
+`minimumScaleFactor` is a last resort so a long title does not clip. Better to shorten the title on the phone before it syncs. Caption plus headline is enough hierarchy. Do not stack six font styles.
+
+Preview the view on more than one watch size. A layout that fits a large Ultra face can clip on a smaller one. The canvas can show several watches. Use it.
+
+<Callout title="Where people stall">
+
+They shrink the iPhone screen with `.scaleEffect` and call it a watch layout. The tap targets become unfair and the words become dust. Rebuild the view from the question it answers. If you need a scroll view to explain the feature, the feature is not a watch feature yet.
+
+</Callout>
+
+## Exercise
+
+Take the study list from the foundation and write the watch version as a single screen: the next title and a Done button. Anything else goes on a second page or is deleted. Check it on two Simulator sizes.
+
+<Solution>
+
+Pass in one `StudyNote` or a string, not the array. The Done button calls a closure the phone or the local store will honor in a later lesson. If the title wraps to four lines, truncate on the model with a shorter field `watchTitle`. Two preview devices in the canvas, a small watch and a large one, are the definition of done for this exercise.
+
+</Solution>

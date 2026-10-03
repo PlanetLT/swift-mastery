@@ -1,0 +1,46 @@
+---
+title: Battery is a feature
+slug: battery-is-a-feature
+track: watch
+level: advanced
+order: 10
+minutes: 15
+summary: Background refresh, location, and animation are battery decisions. Spend them on purpose.
+exit:
+  - "You can name three watch costs: radio, sensors, and a spinning update."
+  - "You can choose a timeline cadence that matches the information."
+  - "You can explain why the phone should do the heavy fetch."
+sources:
+  - timelines
+  - background-tasks
+  - wwdc-watchos-26
+  - watchos-release-notes
+---
+
+On a phone, a wasteful timer is rude. On a watch, it is the product failing. People notice a dead watch before they notice your animation.
+
+Three costs dominate. The radio, when you fetch or talk to the phone. The sensors, when a workout or location is running. The display update, when you insist on seconds and continuous animation. Cut the one your feature does not need.
+
+## A budget you can say out loud
+
+A study complication refreshes when the next lesson changes, and perhaps once an hour as a backstop. It does not refresh every minute. A countdown that shows minutes uses a minute timeline. A workout is allowed to run sensors because the person started a workout and can see the cost in the nature of the app.
+
+Do the JSON fetch on the phone. Send the resulting title across Watch Connectivity. The watch should not duplicate the phone's network habit. Background Tasks on iOS are the phone-side tool when the phone itself is not in the foreground. The watch has a tighter budget. Read the watchOS release notes each year, because architecture and background rules do change. watchOS 26's move toward arm64 on recent watches is a reminder to run on current hardware, not only an old Simulator.
+
+Extended runtime sessions exist for specific modes the system defines, such as workouts. Use those modes for their purpose. Do not look for a loophole to keep a general app in the foreground.
+
+<Callout title="Where people stall">
+
+They animate a progress ring at 60 frames forever and call it craft. Always On will not honor that, and the battery will. They also test only on the Simulator, which does not teach them how warm a real watch gets. Before you ship, wear it for a day.
+
+</Callout>
+
+## Exercise
+
+Write a one-line budget: how often your complication may refresh, and whether the watch radio is allowed to fetch. Remove one timer or animation from your prototype that the budget forbids.
+
+<Solution>
+
+A solid line: "Refresh the complication when the phone pushes a new title, and no more than once an hour otherwise. The watch does not call the network." Delete `Timer.publish` if a `TimelineView` can compute the same label. If you needed location, say why in the same note or remove the entitlement.
+
+</Solution>

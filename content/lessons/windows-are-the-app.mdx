@@ -1,0 +1,78 @@
+---
+title: Windows are the app
+slug: windows-are-the-app
+track: mac
+level: beginner
+order: 1
+minutes: 15
+summary: A Mac app is a scene full of windows. Learn the template, the title, and what a person expects to find in the first second.
+exit:
+  - "You can run a macOS SwiftUI app on your Mac."
+  - "You can set a window title and a sensible default size."
+  - "You can explain why a giant phone layout feels wrong in a window."
+sources:
+  - macos-pathway
+  - scene
+  - hig-macos
+  - wwdc-swiftui-mac
+---
+
+On the Mac, the window is the object people move, resize, and minimize. Your SwiftUI app is a `Scene` that creates those windows. The iPhone layout you practiced, a single column with a huge bottom button, looks lost in the middle of a 1400-point display.
+
+Start from the macOS App template. Run it on your Mac. There is no phone simulator in this path.
+
+## A window with a job
+
+```swift
+import SwiftUI
+
+@main
+struct DeskApp: App {
+    var body: some Scene {
+        WindowGroup {
+            Text("Lessons on this Mac")
+                .frame(minWidth: 420, minHeight: 280)
+        }
+        .defaultSize(width: 720, height: 480)
+        .windowResizability(.contentMinSize)
+    }
+}
+```
+
+`WindowGroup` means the person can open more than one window from the File menu, unless you later restrict it. That is a feature. Treat each window as a view onto the work, not as the entire app process.
+
+Set a navigation title once you have a stack or a split view. The title becomes the window title. "ContentView" is not a title.
+
+<Callout title="Where people stall">
+
+They port an iPhone `TabView` unchanged and call it a Mac app. The HIG for macOS expects a window that uses the width: sidebar, content, perhaps an inspector. Read Designing for macOS before you add a second control. Also, previews on macOS are useful, but run the app. Window sizing bugs hide in previews.
+
+</Callout>
+
+<Surfaces>
+<Surface name="iPhone">
+
+One scene, usually one window the system manages full screen.
+
+</Surface>
+<Surface name="Mac">
+
+The person owns the frame. Your minimum size should still show the primary action.
+
+</Surface>
+<Surface name="Watch">
+
+There is no window to resize. Do not carry `minWidth` habits over.
+
+</Surface>
+</Surfaces>
+
+## Exercise
+
+Create a macOS app whose window title is "Study Desk". Give it a minimum size that still shows a title and a button. Resize it smaller than the minimum and confirm the content does not clip into a useless sliver.
+
+<Solution>
+
+Put `.navigationTitle("Study Desk")` on the root inside a `NavigationStack`, or set the window style your SDK documents for titles. `defaultSize` and `frame(minWidth:minHeight:)` together stop the sliver. If the title stays "DeskApp", the window is using the target name because no navigation title was found. Add the stack.
+
+</Solution>

@@ -1,0 +1,67 @@
+---
+title: Document-shaped data
+slug: document-shaped-data
+track: mac
+level: intermediate
+order: 6
+minutes: 16
+summary: When the person thinks in files, use a document scene instead of a single hidden database.
+exit:
+  - "You can say when a document is a better fit than SwiftData alone."
+  - "You can sketch a FileDocument that reads and writes one value."
+  - "You can explain where the file appears to the person."
+sources:
+  - document-group
+  - hig-macos
+  - swiftdata
+  - wwdc-swiftui-mac
+---
+
+Some Mac apps are libraries: mail, photos, a study history that is "the app's data." SwiftData fits those. Some Mac apps are files: a lesson plan the person emails, duplicates, and stores in a folder. Those want documents. The person should see the file in Finder. If they cannot, you chose the wrong shape.
+
+## A document is a value with a file
+
+```swift
+import SwiftUI
+import UniformTypeIdentifiers
+
+struct PlanFile: FileDocument {
+    static var readableContentTypes: [UTType] { [.plainText] }
+    var text: String
+
+    init(text: String = "") { self.text = text }
+
+    init(configuration: ReadConfiguration) throws {
+        guard let data = configuration.file.regularFileContents,
+              let text = String(data: data, encoding: .utf8) else {
+            throw CocoaError(.fileReadCorruptFile)
+        }
+        self.text = text
+    }
+
+    func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {
+        let data = Data(text.utf8)
+        return FileWrapper(regularFileWithContents: data)
+    }
+}
+```
+
+The scene is `DocumentGroup(newDocument: PlanFile()) { file in TextEditor(text: file.$document.text) }`. SwiftUI presents the open panel, the title, and the dirty state. You edit `file.document`.
+
+You can still keep a SwiftData library for an index of recent plans. The document remains the thing the person owns. Do not silently copy their text into a private store and throw away the file.
+
+<Callout title="Where people stall">
+
+They build a document app and also save everything to SwiftData on every keystroke, then the file and the database disagree. Pick a source of truth. They also use a custom file extension without declaring a UTType, so Finder cannot open the file by double click. For this lesson, plain text avoids that. A custom type belongs in Info.plist when you leave the exercise.
+
+</Callout>
+
+## Exercise
+
+Create a document-based macOS app that edits a lesson title and a body as plain text. Save, quit, and reopen the same file from Finder. Change the body and confirm the window marks itself dirty before you save.
+
+<Solution>
+
+`DocumentGroup` plus `TextEditor` bound to the document is enough for the exercise. Encode title and body with a simple delimiter, or two lines, if you are staying with plain text. The window's dirty dot comes from SwiftUI observing the document binding. If it never appears, the text editor is writing to a copy. Bind `file.$document.text`, with the dollar sign, so edits write back.
+
+</Solution>

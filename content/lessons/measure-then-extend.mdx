@@ -1,0 +1,66 @@
+---
+title: Measure, then extend the surface
+slug: measure-then-extend
+track: ios
+level: advanced
+order: 11
+minutes: 17
+summary: Use Instruments before you guess, then add a widget and an App Intent only when the main screen is already solid.
+exit:
+  - "You can name a measurement you would take before optimizing a list."
+  - "You can describe a widget as a timeline of views, not a tiny app."
+  - "You can describe an App Intent as a single action with a title the system can show."
+sources:
+  - instruments
+  - widgetkit
+  - app-intents
+  - hws-100
+---
+
+Speed work without a measurement is a way to make code harder for no gain. Extension work without a finished app is a way to have three half products. This lesson is the order: measure the screen you have, then consider a widget and a shortcut.
+
+## Measure the list you already wrote
+
+If scrolling stutters, profile Time Profiler or the SwiftUI instrument in Instruments, with a Release build, on a device or a realistic Simulator. Look for work inside `body`, images decoded on the main actor, and lists that do not use stable ids. Fix the hot path the instrument shows. A hunch about "too many views" is often a single unbounded image.
+
+Set a budget in words: "The study list shows 200 rows and stays responsive while flinging." Write it down. A budget you cannot observe is a slogan.
+
+## A widget is a timeline
+
+WidgetKit asks your extension for a timeline of entries: what to show at a date, and when to ask again. It does not run your full SwiftUI app. Share the model through an App Group only if both targets must read the same store. Start with a static entry so you understand the extension target, the widget family, and the placeholder.
+
+An App Intent is a struct that describes one action: title, parameters, and a `perform` method. Shortcuts, Spotlight, and the Action button can run it. Make the action one the person can name in a few words: "Add study note." If you cannot name it, the app is not ready for an intent.
+
+<Callout title="Where people stall">
+
+They add a widget on week two that duplicates a broken list, then debug two processes. They also animate inside a widget. Widgets are not a place for a custom frame loop. Give WidgetKit the next entries and let the system refresh.
+
+</Callout>
+
+<Surfaces>
+<Surface name="iPhone">
+
+Home Screen and Lock Screen widgets, plus Shortcuts.
+
+</Surface>
+<Surface name="Mac">
+
+The same WidgetKit idea can appear in Notification Center. A menu-bar extra is a different tool, covered on the Mac track.
+
+</Surface>
+<Surface name="Watch">
+
+Complications are accessory widgets. The watch track treats them as the front door, not as an extra.
+
+</Surface>
+</Surfaces>
+
+## Exercise
+
+Write a one-sentence performance budget for your study list. Record a 10-second Instruments trace while you scroll. Then sketch, on paper, the single string a widget would show. Do not add the extension until that string is obvious.
+
+<Solution>
+
+A finished sketch says: "Budget: scroll 200 plain text rows without a hang warning. The widget shows the title of the next unfinished lesson, and refreshes when the app saves." If the trace shows image decoding, fix that before you create a widget target. The widget string should be computable without opening your whole view tree.
+
+</Solution>

@@ -1,0 +1,70 @@
+---
+title: AppKit when SwiftUI stops
+slug: appkit-when-you-must
+track: mac
+level: advanced
+order: 8
+minutes: 15
+summary: Wrap an AppKit view when SwiftUI has no equivalent, and keep the rest of the window in SwiftUI.
+exit:
+  - "You can name a reason to leave SwiftUI for a moment."
+  - "You can sketch NSViewRepresentable with make and update."
+  - "You can keep AppKit types out of your document model."
+sources:
+  - appkit
+  - nsview-representable
+  - hig-macos
+  - sundell
+---
+
+SwiftUI on the Mac covers windows, tables, toolbars, and settings. It does not cover every AppKit control that exists. When you hit a real gap, wrap the AppKit view. Do not rewrite the app in AppKit because one control is missing.
+
+A rich text view, a specific PDF view, or an existing `NSView` from a library are honest reasons. A button is not.
+
+## The shape of a wrapper
+
+```swift
+import AppKit
+import SwiftUI
+
+struct LegacyLabel: NSViewRepresentable {
+    var text: String
+
+    func makeNSView(context: Context) -> NSTextField {
+        let field = NSTextField(labelWithString: text)
+        return field
+    }
+
+    func updateNSView(_ field: NSTextField, context: Context) {
+        field.stringValue = text
+    }
+}
+```
+
+`makeNSView` runs when the view is created. `updateNSView` runs when your SwiftUI inputs change. Put the AppKit object together in `make`. Push new values in `update`. If you recreate the AppKit object in `update`, you will lose focus and selection.
+
+The document model should still be a Swift value or a SwiftData model. The `NSTextField` is an adapter at the edge. Tests talk to the model, as they did on iPhone.
+
+<Callout title="Where people stall">
+
+They import AppKit into every file and pass `NSView` through the environment because one screen needed it. The compiler will then refuse to build the iOS target of a multiplatform app. Confine AppKit to a macOS file with an availability check or a separate target. `NSViewRepresentable` is the seam.
+
+</Callout>
+
+## Exercise
+
+Wrap an `NSTextField` that edits a binding. Typing in it updates a SwiftUI `Text` beside it. Moving the cursor and typing again does not reset the caret to the end on every character, which is the usual `updateNSView` bug.
+
+<Solution>
+
+In `updateNSView`, set `stringValue` only when it differs from the field's current string. If you assign the same characters on every keystroke, AppKit still may reset the editor. Compare first:
+
+```swift
+if field.stringValue != text {
+    field.stringValue = text
+}
+```
+
+Send changes out with a coordinator as the field's delegate, calling the binding. The coordinator is the third piece, `makeCoordinator`, and it is the one older tutorials forget to mention.
+
+</Solution>

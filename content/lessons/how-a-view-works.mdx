@@ -1,0 +1,99 @@
+---
+title: How a SwiftUI view actually works
+slug: how-a-view-works
+track: foundation
+level: beginner
+order: 8
+minutes: 16
+summary: A view is a description. Modifiers wrap it. Identity decides whether SwiftUI updates a view or replaces it.
+exit:
+  - "You can build a small view from Text, stacks, and padding."
+  - "You can explain why body can be called again and again."
+  - "You can give a ForEach a stable id."
+sources:
+  - swiftui-pathway
+  - wwdc-swiftui-essentials
+  - wwdc-demystify
+  - swiftui
+---
+
+A SwiftUI view is a struct that describes what the screen should show for the current data. It is not a long-lived object you poke. When data changes, SwiftUI calls `body` again and updates what differs.
+
+That sentence is the whole framework. The rest is practice.
+
+## Describe, then modify
+
+```swift
+import SwiftUI
+
+struct LessonRow: View {
+    var title: String
+    var minutes: Int
+
+    var body: some View {
+        HStack {
+            Text(title)
+            Spacer()
+            Text("\(minutes) min")
+                .foregroundStyle(.secondary)
+        }
+        .padding(.vertical, 8)
+    }
+}
+```
+
+`padding` is a modifier. It returns a new view that wraps the stack. Order matters: padding outside a background colors a larger area than padding inside it. Read modifiers from the view outward, which is the order they are written, top to bottom.
+
+`some View` means "a specific view type, and the caller does not need its name." You return one type of view from `body`. `if` inside `body` is allowed. SwiftUI uses `@ViewBuilder` to turn that into a single result.
+
+## Identity
+
+```swift
+struct Syllabus: View {
+    var titles: [String]
+
+    var body: some View {
+        VStack(alignment: .leading) {
+            ForEach(titles, id: \.self) { title in
+                LessonRow(title: title, minutes: 12)
+            }
+        }
+    }
+}
+```
+
+`ForEach` needs an identity for each row. `id: \.self` is acceptable when the strings are unique and stable. If two rows share a title, or titles get edited, give the model a real id. Demystify SwiftUI is the session that makes this feel obvious. Watch it once this sample runs.
+
+<Callout title="Where people stall">
+
+They store a `UIView` or `NSView` in the struct and expect it to survive. The struct can be recreated often. Put durable objects in state or in a model, which is the next lesson. Also, a view that does heavy work inside `body` will do that work on every update. `body` should describe, not fetch.
+
+</Callout>
+
+<Surfaces>
+<Surface name="iPhone">
+
+The same `LessonRow` becomes a list row. Add a minimum tap height before you ship it.
+
+</Surface>
+<Surface name="Mac">
+
+The same row can sit in a sidebar. Give it a keyboard focus style later, not a bigger font by default.
+
+</Surface>
+<Surface name="Watch">
+
+Drop the minutes, or keep only the minutes. A wrist cannot host this whole row comfortably.
+
+</Surface>
+</Surfaces>
+
+## Exercise
+
+In an Xcode SwiftUI preview or app, show three `LessonRow` values. Then add `.background(.quaternary, in: .rect(cornerRadius: 8))` once inside the padding and once outside. Say which one colors the padding.
+
+<Solution>
+
+Background written after padding includes the padding in the colored shape, because the modifier wraps the already padded view. Background written before padding colors the text stack only, and the padding stays outside that color. Change one modifier's position and preview again. That experiment is the lesson.
+
+</Solution>

@@ -1,0 +1,76 @@
+---
+title: Tables and search
+slug: tables-and-search
+track: mac
+level: intermediate
+order: 4
+minutes: 16
+summary: A Table for columns of lessons, plus search that filters the rows without discarding the selection identity.
+exit:
+  - "You can show three columns in a Table."
+  - "You can filter rows from a search field."
+  - "You can sort by a column without losing stable ids."
+sources:
+  - table
+  - wwdc-swiftui-mac
+  - hig-macos
+  - swiftui
+---
+
+When each item has several facts, a Mac user expects columns. `List` is still right for a sidebar. `Table` is right for the detail: title, minutes, and status, with a header the person can scan.
+
+Search on the Mac is Command-F and a field that filters now. It is not a separate page.
+
+## Columns and a query
+
+```swift
+import SwiftUI
+
+struct DeskLesson: Identifiable {
+    let id: UUID
+    var title: String
+    var minutes: Int
+}
+
+struct LessonTable: View {
+    @State private var lessons: [DeskLesson] = [
+        DeskLesson(id: UUID(), title: "Windows", minutes: 15),
+        DeskLesson(id: UUID(), title: "Tables", minutes: 16),
+    ]
+    @State private var query = ""
+    @State private var selection: DeskLesson.ID?
+
+    var shown: [DeskLesson] {
+        guard query.isEmpty == false else { return lessons }
+        return lessons.filter { $0.title.localizedCaseInsensitiveContains(query) }
+    }
+
+    var body: some View {
+        Table(shown, selection: $selection) {
+            TableColumn("Title", value: \.title)
+            TableColumn("Minutes") { lesson in
+                Text("\(lesson.minutes)")
+            }
+        }
+        .searchable(text: $query)
+    }
+}
+```
+
+Filter a derived array. Do not delete non-matching items from `lessons`, or clearing the search cannot bring them back. Selection stores the id, so a selected row can remain selected when the query still includes it.
+
+<Callout title="Where people stall">
+
+They bind selection to the filtered index. When the query changes, index 0 is a different lesson. Store the id. They also run a network search on every keystroke on the main actor. For a local table, filter in memory. Debounce only when the search leaves the machine.
+
+</Callout>
+
+## Exercise
+
+Add a Status column with the words "New" or "Done". Click a row and show the title in a text field under the table. Changing the title updates the cell. The search box should match both title and status.
+
+<Solution>
+
+Keep `lessons` as the source of truth. The text field binds to a binding you compute from `selection`: find the index in `lessons` by id and pass `$lessons[index].title`. Include status in the filter with `||`. If the edited title no longer matches the query, the row may leave the table while its id stays selected. Decide whether to clear the query or keep the selection invisible. Keeping the id is the less surprising choice.
+
+</Solution>

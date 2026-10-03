@@ -1,0 +1,54 @@
+---
+title: Health with boundaries
+slug: health-with-boundaries
+track: watch
+level: advanced
+order: 9
+minutes: 17
+summary: HealthKit permission, a workout session's real shape, and the privacy line you do not cross.
+exit:
+  - "You can request only the HealthKit types you use."
+  - "You can describe a workout session and a live builder at a high level."
+  - "You can name data you will not collect because it is not the feature."
+sources:
+  - healthkit
+  - health-auth
+  - health-privacy
+  - wwdc-workout
+---
+
+Health data is intimate. The watch is often where it is measured. HealthKit is the store, and the rules around it are part of the API, not a footer. Request the smallest set of types that the feature needs. Explain why in the usage string. If the person refuses, the rest of your study app still works.
+
+A workout is the advanced path: an `HKWorkoutSession` configures sensors and lets the app keep running during the session, and a live builder collects samples and saves an `HKWorkout`. The WWDC21 code-along is the paced version. Watch it when you build one. This lesson does not pretend a paragraph replaces that session.
+
+## Ask for less
+
+```swift
+import HealthKit
+
+func requestHeartRate(store: HKHealthStore) async throws {
+    guard HKHealthStore.isHealthDataAvailable() else { return }
+    guard let heartRate = HKQuantityType.quantityType(forIdentifier: .heartRate) else { return }
+    try await store.requestAuthorization(toShare: [], read: [heartRate])
+}
+```
+
+Sharing and reading are separate sets. A study timer that does not write workouts should not request share access to workouts. A workout app does. The authorization sheet is not a grant you can check bit by bit for reads in every case. Design for "we might not get this sample."
+
+Protecting user privacy, in Apple's HealthKit documentation, is required reading before you ship. Do not use health data for advertising. Do not hide a second use behind a vague purpose string. Do not upload samples to a server unless the person understands that destination and the guidelines allow it.
+
+<Callout title="Where people stall">
+
+They request every type in the Health catalog "so we have it," and people refuse the whole dialog. Or they start a workout session to keep any app alive in the background. A workout session is for a workout. Using it to keep a study timer alive is a review risk and a battery problem. Use the timeline tools unless you are actually recording exercise.
+
+</Callout>
+
+## Exercise
+
+Write the list of HealthKit types your app will read and the list it will write. Delete any type you cannot justify in one sentence to a person wearing the watch. If the honest lists are empty, do not add HealthKit.
+
+<Solution>
+
+A study app's honest lists are often both empty. A walking-lesson app might read distance and write a walking workout, and the purpose string says that. Heart rate is justified only if the screen shows it or the workout summary needs it. If you cannot write the sentence, remove the type. Add the HealthKit capability and the usage strings only after the lists are stable.
+
+</Solution>

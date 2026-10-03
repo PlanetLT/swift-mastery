@@ -1,0 +1,54 @@
+---
+title: Ship the iPhone app
+slug: ship-the-iphone-app
+track: ios
+level: professional
+order: 12
+minutes: 18
+summary: Privacy manifests, a TestFlight build, the review guidelines, and a module boundary you can keep.
+exit:
+  - "You can archive an app and upload it to TestFlight."
+  - "You can point to the privacy manifest and the usage strings your app needs."
+  - "You can name one type that belongs in a Swift package instead of the app target."
+sources:
+  - distribution
+  - testflight
+  - privacy-manifest
+  - app-review
+---
+
+Shipping is a sequence, not a personality trait. The sequence is: a signed archive, a privacy story that matches the binary, TestFlight to a few humans, then App Review. Modularize the part of the code that has rules, so the next release is not a larger single file.
+
+You need a paid developer membership for this lesson. The rest of the track did not.
+
+## The upload
+
+Set a real bundle identifier. Choose a team. Set the version and build number. Archive with the Any iOS Device destination, then distribute through App Store Connect. TestFlight is the first audience. Install your own build on a device before you ask anyone else.
+
+Read the App Review Guidelines with your app in mind, especially privacy, data the person did not expect you to collect, and minimum functionality. A lesson list you use yourself can pass. A shell that only opens a website often does not.
+
+## Privacy that matches behavior
+
+If you use required-reason APIs, add a privacy manifest. If you track people across apps and sites, say so, and expect a stricter review. Photos, notifications, and health each have their own honest sentence. The sentence in the usage description should match the feature. "We need access" is not a reason.
+
+Third-party SDKs ship their own manifests. When you add a package, you inherit its data use. That is a reason to add packages slowly.
+
+## A module worth having
+
+Move `Planner`, or whatever holds your rules, into a local Swift package. The app target and the test target both depend on it. The widget, later, can depend on it too. Follow the package layout from Swift.org. One package with one library is enough. A workspace of twelve modules is a different job.
+
+<Callout title="Where people stall">
+
+They upload a debug build, or they bump the marketing version and forget the build number, so App Store Connect rejects the upload as a duplicate. They also write a privacy nutrition label from memory. Generate and read the privacy report from the archive. The report is the conversation you will have with review.
+
+</Callout>
+
+## Exercise
+
+Archive a build and upload it to TestFlight, even if the app is only your study list. Invite yourself. After it installs, write down one bug you would not have seen in the Simulator. If you cannot upload yet, create the local package and move one tested type into it. That half is still professional work.
+
+<Solution>
+
+In the organizer, a rejected upload names the missing compliance, icon, or duplicate build. Fix that one issue and upload again. For the package, File, New, Package, then add it to the project and move the type. Tests import the package module instead of `@testable` on the app. Keep the view in the app. The package does not need SwiftUI if the type does not.
+
+</Solution>

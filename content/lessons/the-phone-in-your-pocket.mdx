@@ -1,0 +1,54 @@
+---
+title: The phone in your pocket
+slug: the-phone-in-your-pocket
+track: watch
+level: advanced
+order: 8
+minutes: 16
+summary: Watch Connectivity moves a small state between the phone and the watch, and it fails in ways you must show.
+exit:
+  - "You can choose application context or a message for a given fact."
+  - "You can update the watch when the phone's next lesson changes."
+  - "You can show a stale state when the phone is out of reach."
+sources:
+  - watch-connectivity
+  - independent-watch
+  - watchos-docs
+  - apple-forums
+---
+
+A companion watch app needs a way to hear about the phone's data. Watch Connectivity is that pipe. It is not a general network stack. It carries dictionaries and data between the paired phone and watch, when the system allows.
+
+Two tools cover most study apps. Application context is the latest snapshot: "the next lesson is Optionals." A new context replaces the old one. Use it for state that only the newest value matters. A user-info transfer is a queue, for events you do not want to drop, such as a Done tap that happened on the watch while the phone was locked.
+
+## Send the latest snapshot
+
+```swift
+import WatchConnectivity
+
+func pushNextLesson(title: String?) {
+    guard WCSession.default.activationState == .activated else { return }
+    let payload = ["nextTitle": title ?? ""]
+    try? WCSession.default.updateApplicationContext(payload)
+}
+```
+
+Activate the session on both sides, early, with a delegate. The delegate receives `didReceiveApplicationContext`. Put the string into your watch model. Empty string means nothing queued. Do not invent a second source of truth on the watch if the phone owns the list. The watch can cache the last context so a glance still works when the phone is away. Label it as last known if staleness would mislead, especially for anything time-critical. A lesson title can be slightly stale. A heart rate cannot.
+
+Reachability is not guaranteed. `isReachable` can be false while the watch is on a wrist in another room. Design the glance to use the cache.
+
+<Callout title="Where people stall">
+
+They send the entire SwiftData store on every keystroke and blow the budget. Send the next title, not the library. They also update the context from a background queue and crash, or they forget to activate the session on the phone side and only test the watch. Activate both. Log the error from `updateApplicationContext`. It throws when the payload is not property-list types.
+
+</Callout>
+
+## Exercise
+
+From the phone, send the next lesson title whenever it changes. On the watch, show that title. Turn off the phone Simulator's Bluetooth simulation or quit the phone app, and confirm the watch still shows the last title instead of a crash or a blank screen.
+
+<Solution>
+
+Store the last received title in the watch model and on disk if you need it across launches. `didReceiveApplicationContext` also delivers the most recent context when the session activates, which covers the relaunch case if the phone sent one. If the first launch has never received a context, show "Open iPhone once" rather than an empty headline. Keep the payload to strings and numbers.
+
+</Solution>

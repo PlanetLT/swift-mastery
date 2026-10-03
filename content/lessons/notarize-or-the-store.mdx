@@ -1,0 +1,62 @@
+---
+title: Notarize, or the Mac App Store
+slug: notarize-or-the-store
+track: mac
+level: professional
+order: 10
+minutes: 16
+summary: Two ways to ship a Mac app, and the checks both of them require before a stranger's Mac will open it.
+exit:
+  - "You can explain the difference between notarization and Mac App Store review."
+  - "You can archive a Developer ID build or a Mac App Store build on purpose."
+  - "You can name the sandbox rule that applies to one path and not the other."
+sources:
+  - notarization
+  - distribution
+  - sandbox
+  - app-review
+---
+
+People get Mac apps from two places. The Mac App Store reviews the binary, requires the sandbox, and handles payments and updates. A direct download, from your site, must be signed with a Developer ID certificate and notarized by Apple, or Gatekeeper will warn or block. Notarization is an automated malware check. It is not a design review. You still owe the person a sane app.
+
+Pick one path for the first release. Supporting both is reasonable later. The entitlements differ. A build signed for the store is not the build you notarize for Developer ID.
+
+## What you do, in order
+
+Join the developer program. Create the certificate the path requires. Archive in Xcode. For the store, upload like the iPhone lesson. For direct distribution, export a Developer ID-signed app and submit it for notarization. Xcode's organizer can do this. Staple the ticket so the app launches offline. Apple's notarizing document is the checklist. Follow it when the button names differ from this paragraph. They move.
+
+Hardened runtime is part of modern notarization. If a framework you embedded is not signed, notarization fails with a log. Read the log. It names the file.
+
+<Callout title="Where people stall">
+
+They email a `.app` in a zip that was signed with a development certificate. It opens on their Mac and nowhere else. Or they notarize and forget to staple, and the app fails on a machine that is offline. Test on a Mac that has never seen your build, or a fresh user account, before you announce the download.
+
+</Callout>
+
+<Surfaces>
+<Surface name="iPhone">
+
+There is no Developer ID path for a normal iPhone app. The store and TestFlight are the doors.
+
+</Surface>
+<Surface name="Mac">
+
+Store or notarized direct download. Say which one in your README so you do not mix certificates.
+
+</Surface>
+<Surface name="Watch">
+
+Ships with a store listing, usually beside the iPhone app. There is no notarized side download for the watch.
+
+</Surface>
+</Surfaces>
+
+## Exercise
+
+Choose a path and write it at the top of your notes. If you have a membership, archive once for that path. If notarization or upload fails, paste the first real error into your notes and fix only that. If you cannot upload, list the entitlements your document app would ship with and strike the ones you enabled "just in case."
+
+<Solution>
+
+A direct-download study app often needs: Developer ID, hardened runtime, notarization, and user-selected file access if sandboxed by choice. A store app needs: Mac App Store distribution certificate, sandbox on, and the same file entitlement without a temporary exception. The error log from `notarytool` is the source of truth when a framework is unsigned. Sign nested code first.
+
+</Solution>

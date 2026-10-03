@@ -1,0 +1,77 @@
+---
+title: Concurrency and the main actor
+slug: concurrency-and-main-actor
+track: ios
+level: advanced
+order: 10
+minutes: 18
+summary: async functions for waiting, the main actor for UI, and a clear place for work that must not block a gesture.
+exit:
+  - "You can mark UI types @MainActor and call async work with await."
+  - "You can move a slow pure function off the main actor."
+  - "You can explain what a data race is in one sentence."
+sources:
+  - swift-concurrency-book
+  - swift-concurrency
+  - wwdc-async
+  - xctest
+---
+
+A data race is two pieces of work touching the same memory at the same time without a rule. Swift's concurrency system gives you the rule: `await` at suspension points, and actors to protect state. The main actor is the actor that owns the interface.
+
+UI updates belong on the main actor. Parsing a large file, resizing an image, and a tight loop do not.
+
+## Wait without blocking the tap
+
+```swift
+import SwiftUI
+
+@MainActor
+@Observable
+final class ImportModel {
+    var summary = "Idle"
+    var isImporting = false
+
+    func importText(_ text: String) async {
+        isImporting = true
+        let count = await Task.detached(priority: .userInitiated) {
+            text.split { $0.isWhitespace || $0.isNewline }.count
+        }.value
+        summary = "\(count) words"
+        isImporting = false
+    }
+}
+```
+
+`importText` runs on the main actor because the type does. The detached task does the split elsewhere. You `await` its value, then set `summary` back on the main actor. The button's action is `Task { await model.importText(pasted) }`.
+
+For a real import, prefer a non-detached async function on a type that is not main-actor isolated, and hop back with `await MainActor.run` only for the assignment. `Task.detached` is a sharp tool. It does not inherit actor context, which is why the example uses it for a pure function of a `String`, a value that is safe to send.
+
+`Sendable` is the compiler's word for "safe to cross an isolation boundary." Structs of sendable fields usually qualify. A class does not, unless it is an actor or explicitly marked. When the compiler says a type is not sendable, believe it. Do not silence the warning to ship.
+
+<Callout title="Where people stall">
+
+They wrap every line in `DispatchQueue.main.async` because a UIKit article from 2016 did that. In SwiftUI with structured concurrency, you are already on the main actor if the view or the `@MainActor` model called you. Extra dispatches hide the real hop. They also forget `.task` cancellation: if the view goes away, stop the work or ignore the result.
+
+</Callout>
+
+## Exercise
+
+Write `wordCount(_ text: String) async -> Int` as a pure function and call it from a `@MainActor` model. Add a test that awaits the function. The test does not need a view.
+
+<Solution>
+
+```swift
+func wordCount(_ text: String) async -> Int {
+    text.split { $0.isWhitespace || $0.isNewline }.count
+}
+
+func testWords() async {
+    let count = await wordCount("one language three surfaces")
+    XCTAssertEqual(count, 4)
+}
+```
+
+Mark the test method `async` and use an async test. The model sets `summary` only after `await`, so the assignment stays on the main actor.
+
+</Solution>

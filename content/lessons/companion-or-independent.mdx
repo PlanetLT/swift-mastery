@@ -1,0 +1,57 @@
+---
+title: Companion, or independent
+slug: companion-or-independent
+track: watch
+level: beginner
+order: 1
+minutes: 14
+summary: Decide whether the watch app can live without the iPhone app installed, and create the target that matches the decision.
+exit:
+  - "You can explain the difference between a companion watch app and an independent one."
+  - "You can run a watchOS app in the paired Simulator."
+  - "You can say where the source of truth for your study list should live."
+sources:
+  - watchos-pathway
+  - independent-watch
+  - building-watch
+  - watchos-home
+---
+
+An Apple Watch app is either installed beside an iPhone app, or it is independent and can be installed from the watch alone. That choice is a product decision you should make before you decorate a tiny screen.
+
+A companion fits when the phone holds the library and the watch shows the next lesson. Independent fits when the watch is the whole product: a timer, a breath, a workout. Apple's document on creating independent watchOS apps is the configuration source. Read it when you check the target setting, because the checkbox names move.
+
+## Run the pair
+
+Create a watchOS App target, or add a watch target to the iOS app you already trust. Run it. The destination is a watch paired with an iPhone Simulator. The first launch is slow. When you see your root view, stop and look at the target membership of each file. A model that both apps compile is a shared file or a package. A view that uses WatchKit-only types stays in the watch target.
+
+```swift
+import SwiftUI
+
+@main
+struct StudyWatchApp: App {
+    var body: some Scene {
+        WindowGroup {
+            Text("Next lesson")
+        }
+    }
+}
+```
+
+The life cycle article shows a `WKApplicationDelegateAdaptor` for events SwiftUI does not surface directly. You do not need the delegate for this text. You will need it for some background and notification cases. Know where it plugs in: a property on the `App` struct.
+
+<Callout title="Where people stall">
+
+They design an independent app and then call the iPhone for every tap. The watch is not a thin remote control for a phone screen. If the phone must be present for the feature to make sense, ship a companion and say so. If the feature is a glance, the watch should answer without a round trip.
+
+</Callout>
+
+## Exercise
+
+Write one sentence: "This watch app is independent" or "This watch app is a companion." List the one fact it shows. Create the target and run that fact in the Simulator.
+
+<Solution>
+
+A companion sentence looks like: "Companion. The phone owns the lesson list. The watch shows the next unfinished title." An independent sentence looks like: "Independent. The watch owns a single timer." If you cannot name the one fact, you are about to port the iPhone list, and the next lesson will push back.
+
+</Solution>

@@ -1,0 +1,89 @@
+---
+title: Photos and the permission you earn
+slug: photos-and-permission
+track: ios
+level: intermediate
+order: 6
+minutes: 15
+summary: Use the Photos picker so people choose images without handing your app the whole library.
+exit:
+  - "You can present PhotosPicker and receive a selected item."
+  - "You can explain why a picker is a smaller permission than full library access."
+  - "You can load image data and show a failure if the item cannot be read."
+sources:
+  - photos-picker
+  - privacy-manifest
+  - hig-ios
+  - app-review
+---
+
+The most respectful way to get a photo is to ask for one photo. `PhotosPicker` does that. The person stays inside a system picker. Your app receives the selection. You do not get a pass to browse the library.
+
+Full photo-library access is a separate, heavier permission. Ask for it only when the product truly is a photo manager. App Review will ask why.
+
+## Pick one image
+
+```swift
+import PhotosUI
+import SwiftUI
+
+struct PhotoNote: View {
+    @State private var selection: PhotosPickerItem?
+    @State private var data: Data?
+
+    var body: some View {
+        VStack {
+            if let data, let image = UIImage(data: data) {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFit()
+            } else {
+                ContentUnavailableView("No photo", systemImage: "photo")
+            }
+            PhotosPicker("Choose photo", selection: $selection, matching: .images)
+        }
+        .task(id: selection) {
+            guard let selection else { return }
+            data = try? await selection.loadTransferable(type: Data.self)
+        }
+    }
+}
+```
+
+`task(id:)` restarts when the selection changes. `loadTransferable` can fail if the item is in iCloud and the download does not finish. Show a sentence in that case. A blank rectangle looks like a bug.
+
+Add a purpose string only if an API you call requires one. The picker flow is designed to avoid a broad usage description. Read the current Photos picker article before you add `NSPhotoLibraryUsageDescription`, because adding it implies a broader claim.
+
+<Callout title="Where people stall">
+
+They request full library access because an old UIKit sample did, then fail review or scare the person with a system alert the feature did not need. They also hold `UIImage` in an `@Observable` model that they try to save in SwiftData. Store `Data` or a file URL, and create the image at the edge of the view.
+
+</Callout>
+
+<Surfaces>
+<Surface name="iPhone">
+
+The picker is the right door. The camera is a separate, explicit capture flow.
+
+</Surface>
+<Surface name="Mac">
+
+People drag files. The Mac track uses `Transferable` and file importers more often than a photo roll.
+
+</Surface>
+<Surface name="Watch">
+
+Do not pick photos on the watch. If a face needs an image, prepare a tiny one on the phone.
+
+</Surface>
+</Surfaces>
+
+## Exercise
+
+Limit the picker to a single image. When loading fails, show "That photo did not load" and leave the previous image in place if there was one.
+
+<Solution>
+
+Keep `previous` data until the new load succeeds. Use `do/catch` instead of `try?`. On catch, set an error string and do not nil out `data`. `matching: .images` and a non-array `PhotosPickerItem?` already mean one image. If you switch to `[PhotosPickerItem]`, cap the selection with `maxSelectionCount: 1`.
+
+</Solution>

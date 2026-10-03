@@ -1,0 +1,82 @@
+---
+title: Layout for a hand
+slug: layout-for-a-hand
+track: ios
+level: beginner
+order: 1
+minutes: 16
+summary: Stacks, spacing, and safe areas so a screen is comfortable in one hand and still readable when the type grows.
+exit:
+  - "You can build a screen from VStack, HStack, and Spacer with intentional spacing."
+  - "You can keep controls out of the home-indicator and the notch area."
+  - "You can let Dynamic Type grow without clipping a primary button."
+sources:
+  - hig-ios
+  - hig-layout
+  - swiftui
+  - wwdc-swiftui-essentials
+---
+
+An iPhone screen is a portrait column held in one hand. The primary action sits where a thumb can reach it, usually low. The title sits where the eye starts, usually high. SwiftUI stacks are enough for that if you choose spacing instead of hard-coded frames.
+
+## A column with a reachable action
+
+```swift
+import SwiftUI
+
+struct HandLayout: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Today")
+                .font(.largeTitle)
+            Text("Three lessons left in the foundation. One of them needs a Mac, and you are already on one.")
+                .font(.body)
+                .foregroundStyle(.secondary)
+            Spacer(minLength: 24)
+            Button("Continue") {}
+                .buttonStyle(.borderedProminent)
+                .frame(maxWidth: .infinity)
+        }
+        .padding()
+        .safeAreaPadding(.bottom)
+    }
+}
+```
+
+`Spacer` pushes the button down. `frame(maxWidth: .infinity)` makes the button a full-width target without pinning it to a magic point size. `safeAreaPadding` keeps it above the home indicator. If you ignore the safe area, do it only for a background color, never for a control.
+
+Use the system text styles: `.largeTitle`, `.body`, `.caption`. They follow the person's type size. A `.font(.system(size: 17))` does not.
+
+<Callout title="Where people stall">
+
+They design at one phone size in the preview and ship clipped text on a smaller phone or with larger accessibility type. Add a second preview, and turn on a larger Dynamic Type size in the environment. If the button disappears, the layout is not finished.
+
+</Callout>
+
+<Surfaces>
+<Surface name="iPhone">
+
+One column. The thumb path is the design. Side-by-side panels are an iPad and Mac habit.
+
+</Surface>
+<Surface name="Mac">
+
+This same stack looks sparse in a window. The Mac track will put the action in a toolbar instead of a giant bottom button.
+
+</Surface>
+<Surface name="Watch">
+
+Drop the paragraph. The button and one word might remain. The spacer is wasted on a wrist.
+
+</Surface>
+</Surfaces>
+
+## Exercise
+
+Build this screen. Add a preview with `dynamicTypeSize(.accessibility3)`. Make the paragraph and the button both remain reachable by scrolling if they no longer fit.
+
+<Solution>
+
+Wrap the stack in a `ScrollView` when you test large type. Keep the button inside the scroll content, or pin it with `safeAreaInset(edge: .bottom)` so it stays visible while the text scrolls. `safeAreaInset` is the better professional shape: the action remains on screen, the words move.
+
+</Solution>

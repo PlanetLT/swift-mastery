@@ -1,0 +1,93 @@
+---
+title: Optionals without fear
+slug: optionals-without-fear
+track: foundation
+level: beginner
+order: 3
+minutes: 15
+summary: Model absence with Optional, unwrap with if let and guard, and stop force-unwrapping to make the compiler quiet.
+exit:
+  - "You can explain what nil means for a type you wrote."
+  - "You can unwrap with if let and with guard let."
+  - "You can name a case where a force unwrap is a bug, not a shortcut."
+sources:
+  - swift-basics
+  - swift-tour
+  - hws-sixty
+  - sundell
+---
+
+Most crashes in a first Swift app are a value that was missing and a programmer who insisted it was there. Swift makes absence visible. The type `String?` means "a string, or nil".
+
+Nil is not a blank string and not zero. It means there is no value.
+
+## Unwrap on purpose
+
+```swift
+func firstWord(in title: String?) -> String {
+    guard let title, title.isEmpty == false else {
+        return "Untitled"
+    }
+    return title.split(separator: " ").first.map(String.init) ?? "Untitled"
+}
+
+let named = firstWord(in: "Swift Mastery")
+let missing = firstWord(in: nil)
+```
+
+`guard let` leaves the unwrapped name in scope for the rest of the function, and the `else` must exit. `if let` is the right tool when the rest of the function should still run.
+
+`??` supplies a default. Use it when a default is honest. "Untitled" is honest for a missing title. A default password would not be.
+
+## The mark you should not reach for
+
+```swift
+let note: String? = nil
+// let crash = note!  // traps if note is nil
+let safe = note ?? ""
+```
+
+The `!` after a value force-unwraps. If the value is nil, the process stops. Apple's frameworks sometimes return optionals because the thing might not exist yet: a selected row, a URL from a string, a photo the person refused.
+
+<Callout title="Where people stall">
+
+They sprinkle `!` through a sample copied from a video so the next line will compile. The video's author knew the value was present in that one demo. Your app will meet the empty case. Unwrap, or pass the optional along.
+
+</Callout>
+
+<Surfaces>
+<Surface name="iPhone">
+
+A missing photo, a denied permission, and an empty list are optionals or empty collections. Show a sentence, not a crash.
+
+</Surface>
+<Surface name="Mac">
+
+A document that failed to open is an optional or an error. The window should say so.
+
+</Surface>
+<Surface name="Watch">
+
+A complication with no fresh data should show a placeholder the system understands, not a trap.
+
+</Surface>
+</Surfaces>
+
+## Exercise
+
+Write `port(from input: String) -> Int?` that returns a number only when the whole string is an integer between 1 and 65535. Call it with `"80"`, `"nope"`, and `""`.
+
+<Solution>
+
+```swift
+func port(from input: String) -> Int? {
+    guard let value = Int(input), (1...65535).contains(value) else {
+        return nil
+    }
+    return value
+}
+```
+
+`Int(input)` is already optional. The range check belongs in the same `guard`, so callers never see an out-of-range port.
+
+</Solution>

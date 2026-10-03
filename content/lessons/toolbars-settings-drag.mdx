@@ -1,0 +1,80 @@
+---
+title: Toolbars, settings, and drag
+slug: toolbars-settings-drag
+track: mac
+level: intermediate
+order: 5
+minutes: 16
+summary: Put frequent actions in the toolbar, preferences in Settings, and dragged lessons on the Transferable path.
+exit:
+  - "You can add a toolbar button with a label and a shortcut."
+  - "You can open a Settings scene with Command-comma."
+  - "You can drag a lesson title out of the window as text."
+sources:
+  - settings
+  - transferable
+  - commands
+  - hig-macos
+---
+
+The toolbar is for actions on the current window. Settings are for actions on the app. Drag and drop is how Mac users move real objects between windows and other apps. Those three are separate doors.
+
+## Settings as a scene
+
+```swift
+import SwiftUI
+
+@main
+struct DeskApp: App {
+    var body: some Scene {
+        WindowGroup {
+            LessonTable()
+                .toolbar {
+                    Button("Add Lesson", systemImage: "plus") {}
+                        .keyboardShortcut("n", modifiers: [.command, .shift])
+                }
+        }
+        Settings {
+            Form {
+                Toggle("Show minutes", isOn: .constant(true))
+            }
+            .padding()
+            .frame(width: 360)
+        }
+    }
+}
+```
+
+The system already maps Settings to Command-comma. You supply the scene. Do not build a custom preferences window unless the system scene cannot hold the control.
+
+## Drag a value out
+
+```swift
+import CoreTransferable
+
+struct LessonTitle: Transferable, Codable {
+    var title: String
+    static var transferRepresentation: some TransferRepresentation {
+        CodableRepresentation(contentType: .plainText)
+        ProxyRepresentation(exporting: \.title)
+    }
+}
+```
+
+Attach `.draggable(LessonTitle(title: lesson.title))` to a row. Dropping into TextEdit should insert the title once the proxy exports a string. Receiving drops uses `.dropDestination`. Start with export. Receiving is the same protocol in the other direction.
+
+<Callout title="Where people stall">
+
+They put a Settings form inside the main window as a tab named Preferences, so Command-comma does nothing. They also implement drag with a custom pasteboard from an old AppKit post and ignore `Transferable`, then cannot drag into SwiftUI. Use the protocol the framework reads.
+
+</Callout>
+
+## Exercise
+
+Add the Settings scene with one toggle stored in `@AppStorage`. Add a toolbar item that inserts a lesson. Drag a row's title into TextEdit.
+
+<Solution>
+
+`@AppStorage("showMinutes") private var showMinutes = true` inside the settings form, and the same key in the table, keeps the toggle live. The toolbar button appends to the lessons array in the window's model. For drag, `ProxyRepresentation(exporting: \.title)` is the piece TextEdit understands. If the drag image appears but the drop does nothing, the representation is not plain text. Export `String` explicitly.
+
+</Solution>

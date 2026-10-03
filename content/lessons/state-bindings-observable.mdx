@@ -1,0 +1,96 @@
+---
+title: State, bindings, and Observable
+slug: state-bindings-observable
+track: foundation
+level: beginner
+order: 9
+minutes: 18
+summary: Local state with @State, a child that edits through a binding, and a shared model with @Observable.
+exit:
+  - "You can toggle a Bool with @State and see the view update."
+  - "You can pass a Binding into a child control."
+  - "You can mark a model @Observable and read one property from a view."
+sources:
+  - observation
+  - wwdc-observation
+  - model-data
+  - wwdc-swiftui-essentials
+---
+
+SwiftUI updates a view when state that the view read has changed. You tell it which values are state. There are three levels, and mixing them up is the usual bug.
+
+`@State` is private value storage owned by one view. A `Binding` lets a child read and write a value someone else owns. `@Observable` is a model object that many views can share, with updates limited to the properties a view actually read.
+
+## Local, then shared
+
+```swift
+import SwiftUI
+
+struct Counter: View {
+    @State private var count = 0
+
+    var body: some View {
+        Button("Count \(count)") {
+            count += 1
+        }
+    }
+}
+```
+
+`count` is a struct property with a wrapper. You read it as `count` and SwiftUI tracks the dependency. Put `@State` on value types and keep it private. Pass `$count` when a child needs a binding. The dollar sign is the binding.
+
+```swift
+import Observation
+
+@Observable
+final class SyllabusModel {
+    var finished: Set<String> = []
+
+    func toggle(_ slug: String) {
+        if finished.contains(slug) {
+            finished.remove(slug)
+        } else {
+            finished.insert(slug)
+        }
+    }
+}
+```
+
+Create the model once with `@State` in the owner, or put it in the environment if a whole tree needs it. A view that reads `model.finished` updates when that set changes. A view that does not read it does not.
+
+Older courses use `ObservableObject` and `@Published`. Those still compile. New code in this guide uses `@Observable`. If a 2021 video shows `@StateObject`, translate it rather than copying it.
+
+<Callout title="Where people stall">
+
+They create the observable model inside `body`, so every update makes a new model and the toggles vanish. Create it with `@State` in the parent, or with the environment at the app entry. Also, they mark every field `@State` inside a row. Rows should receive data. The owner holds the state.
+
+</Callout>
+
+## Exercise
+
+Build a parent view with `@State private var title = "Draft"`. Pass `$title` to a child that contains a `TextField`. Add a second text view in the parent that shows the same title, and confirm both update as you type.
+
+<Solution>
+
+```swift
+struct TitleEditor: View {
+    @Binding var title: String
+    var body: some View {
+        TextField("Title", text: $title)
+    }
+}
+
+struct TitleScreen: View {
+    @State private var title = "Draft"
+    var body: some View {
+        VStack {
+            Text(title)
+            TitleEditor(title: $title)
+        }
+    }
+}
+```
+
+The child never owns the string. The parent does. That split is the one you will reuse for forms.
+
+</Solution>

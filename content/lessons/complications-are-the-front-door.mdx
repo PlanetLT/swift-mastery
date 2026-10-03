@@ -1,0 +1,64 @@
+---
+title: Complications are the front door
+slug: complications-are-the-front-door
+track: watch
+level: intermediate
+order: 7
+minutes: 16
+summary: A watch face complication, built with WidgetKit, is how people see your app without opening it.
+exit:
+  - "You can explain why complications moved to WidgetKit."
+  - "You can sketch an accessory widget that shows one string."
+  - "You can name a placeholder that looks honest before data arrives."
+sources:
+  - widgetkit
+  - clockkit-migration
+  - hig-watch
+  - watchos-docs
+---
+
+The watch face is the real home screen. A complication is the small slot your app can occupy there. People may never open your full app if the complication answers the question. That is a success, not a failure.
+
+ClockKit was the old API. New complications are WidgetKit accessory widgets. If you find a ClockKit sample, use Apple's migration article rather than copying the sample. The idea is unchanged: a timeline of entries, a family of shapes, a placeholder.
+
+## One string in the slot
+
+A widget extension returns a timeline. For a study app, the entry is the next lesson's short title, and the refresh is "when the lesson changes" plus a backup date. The placeholder is the word "Study" or a dash, not a fake lesson title that looks real.
+
+Accessory families are the shapes: circular, corner, rectangular, inline. Design the rectangular one and the circular one. Do not assume a long title will fit the circular face. `watchTitle` from the glance lesson is the field you show.
+
+Tap on the complication opens the app, often to a specific lesson if you add a widget URL. Deep-link to the next lesson, not to a settings page.
+
+<Callout title="Where people stall">
+
+They show four fields in a corner slot. Or they update the complication by launching the app every minute. WidgetKit wants a timeline, and the system budgets reloads. Provide the next few entries if you can predict them, such as a timer's end. A lesson title that changes only when the person taps Done can wait for a reload you request from the app after the save.
+
+</Callout>
+
+<Surfaces>
+<Surface name="iPhone">
+
+The cousin is a Lock Screen widget. Same WidgetKit habit, more pixels.
+
+</Surface>
+<Surface name="Mac">
+
+A menu-bar extra is the closer cousin than a watch face. Do not force a complication layout onto the Mac.
+
+</Surface>
+<Surface name="Watch">
+
+If the complication is useless, the app is probably a phone app that happens to launch on a wrist.
+
+</Surface>
+</Surfaces>
+
+## Exercise
+
+Write the complication's text for three states: no lessons, one lesson titled "Optionals", and a title longer than twenty characters. Design what the circular and rectangular families show in each state. Only then create the widget target.
+
+<Solution>
+
+No lessons: rectangular "Nothing queued", circular a simple symbol. One lesson: rectangular "Optionals", circular the first letter or a book symbol plus a short word if it fits. Long title: a shortened `watchTitle` you stored on purpose, not a scaled paragraph. Create the WidgetKit extension after those strings exist. Use the accessory families in the widget configuration. Include a placeholder entry that does not pretend a lesson is scheduled.
+
+</Solution>

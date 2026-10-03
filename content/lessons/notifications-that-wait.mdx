@@ -1,0 +1,69 @@
+---
+title: Notifications that wait their turn
+slug: notifications-that-wait
+track: ios
+level: intermediate
+order: 7
+minutes: 15
+summary: Ask for notification permission in context, schedule one local notification, and live with a denial.
+exit:
+  - "You can request authorization and branch on the result."
+  - "You can schedule a local notification at a specific time."
+  - "You can keep the app useful when the person says no."
+sources:
+  - user-notifications
+  - hig-ios
+  - app-review
+  - apple-forums
+---
+
+A notification is an interruption. Ask for it when the person just did something that makes the alert meaningful, such as turning on a study reminder. Asking at first launch trains people to refuse.
+
+Local notifications are scheduled on device. Remote push is a later professional topic and needs a server. Learn the local path first. The permission model is the part people get wrong.
+
+## Ask, then schedule
+
+```swift
+import UserNotifications
+
+func armStudyReminder(at date: Date) async {
+    let center = UNUserNotificationCenter.current()
+    let settings = await center.notificationSettings()
+    let granted: Bool
+    if settings.authorizationStatus == .notDetermined {
+        granted = (try? await center.requestAuthorization(options: [.alert, .sound])) ?? false
+    } else {
+        granted = settings.authorizationStatus == .authorized
+    }
+    guard granted else { return }
+
+    let content = UNMutableNotificationContent()
+    content.title = "Study"
+    content.body = "A short Swift lesson is waiting."
+
+    let components = Calendar.current.dateComponents([.hour, .minute], from: date)
+    let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
+    let request = UNNotificationRequest(identifier: "study.reminder", content: content, trigger: trigger)
+    try? await center.add(request)
+}
+```
+
+Reusing the identifier `"study.reminder"` replaces the previous plan. That is what you want for one reminder. Use a fresh identifier when the person can have many.
+
+If they deny permission, the study list still works. Put a quiet row in Settings that explains how to enable alerts in the system Settings app. Do not re-prompt in a loop. The system will not show the dialog again.
+
+<Callout title="Where people stall">
+
+They schedule in the Simulator and forget that Do Not Disturb and Focus modes still apply. They also request `.badge` and `.sound` and never clear the badge, so the icon stays noisy. Test with the app backgrounded. A notification does not appear while you are looking at the breakpoint.
+
+</Callout>
+
+## Exercise
+
+Add a toggle "Remind me at 8". When it turns on, request permission and schedule a notification for the next 8:00 in the morning. When it turns off, remove the pending request with that identifier. When permission is denied, show the toggle off and a line of explanation.
+
+<Solution>
+
+Call `center.removePendingNotificationRequests(withIdentifiers: ["study.reminder"])` when the toggle goes off. Compute the next 8:00 with `Calendar.current.nextDate(after:matching:matchingPolicy:)`. If `requestAuthorization` returns false, set the toggle back to false yourself. Store the user's preference in `@AppStorage` only after you know the system allowed it, or store it and reconcile with `notificationSettings` on appear.
+
+</Solution>

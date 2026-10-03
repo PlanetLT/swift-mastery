@@ -1,0 +1,104 @@
+---
+title: The first real screen
+slug: the-first-real-screen
+track: foundation
+level: beginner
+order: 10
+minutes: 18
+summary: A navigation stack, a list of structs, and a sheet that adds one item. The shape every platform track will bend.
+exit:
+  - "You can show a list of identifiable values."
+  - "You can push a detail view with NavigationLink."
+  - "You can add an item from a sheet and see it in the list."
+sources:
+  - navigation
+  - list
+  - wwdc-navigation-cookbook
+  - swiftui-tutorials
+---
+
+You now have values, views, and state. Put them into one screen a person can use: a list, a detail page, and a way to add.
+
+This is still the foundation. The iPhone track will make it comfortable in a hand. The Mac track will turn the list into a table. The watch track will refuse to show this many rows.
+
+## The model and the list
+
+```swift
+import SwiftUI
+
+struct StudyItem: Identifiable, Hashable {
+    let id = UUID()
+    var title: String
+}
+
+struct StudyList: View {
+    @State private var items: [StudyItem] = [
+        StudyItem(title: "Optionals"),
+        StudyItem(title: "Views"),
+    ]
+    @State private var isAdding = false
+
+    var body: some View {
+        NavigationStack {
+            List(items) { item in
+                NavigationLink(item.title, value: item)
+            }
+            .navigationTitle("Study")
+            .navigationDestination(for: StudyItem.self) { item in
+                Text(item.title).padding()
+            }
+            .toolbar {
+                Button("Add") { isAdding = true }
+            }
+            .sheet(isPresented: $isAdding) {
+                AddStudyItem { title in
+                    items.append(StudyItem(title: title))
+                }
+            }
+        }
+    }
+}
+```
+
+`Identifiable` gives `List` a stable id. `Hashable` lets the value drive `navigationDestination`. The sheet binds to a Boolean. When the person saves, the closure appends. Because `items` is state, the list refreshes.
+
+```swift
+struct AddStudyItem: View {
+    @Environment(\.dismiss) private var dismiss
+    @State private var title = ""
+    var onSave: (String) -> Void
+
+    var body: some View {
+        NavigationStack {
+            TextField("Title", text: $title)
+                .padding()
+            .navigationTitle("New")
+            .toolbar {
+                Button("Save") {
+                    let trimmed = title.trimmingCharacters(in: .whitespaces)
+                    if trimmed.isEmpty == false {
+                        onSave(trimmed)
+                        dismiss()
+                    }
+                }
+            }
+        }
+    }
+}
+```
+
+<Callout title="Where people stall">
+
+They use `NavigationView`, which older tutorials and some watch samples still show. For new iPhone and Mac apps, use `NavigationStack`. They also give every new item a fresh `UUID` stored inside the struct without care, then lose identity when they rebuild the array from titles. Keep the id on the value you store.
+
+</Callout>
+
+## Exercise
+
+Add a swipe-free delete button on the detail screen that removes the item by id and dismisses. Empty titles must not create a row. Show the words "Nothing yet" when the array is empty.
+
+<Solution>
+
+Pass a closure `onDelete: (UUID) -> Void` into the destination, or filter `items` in the parent when a binding to the selection changes. The empty state is an `if items.isEmpty` branch beside the `List`, with a `ContentUnavailableView` if your SDK has it. The important part: deletion filters by `id`, not by title, so two items can share a name.
+
+</Solution>

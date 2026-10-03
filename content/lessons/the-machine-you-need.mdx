@@ -1,0 +1,86 @@
+---
+title: The machine you actually need
+slug: the-machine-you-need
+track: foundation
+level: beginner
+order: 1
+minutes: 14
+summary: Install Xcode on a Mac, sign in, and prove that iPhone, Mac, and Watch templates all run before you study syntax.
+exit:
+  - "You can create an iOS App in Xcode and run it in the Simulator."
+  - "You can say what a free Apple Account can do, and what a paid membership is for."
+  - "You have seen the macOS and watchOS project templates exist."
+sources:
+  - apple-developer-pathway
+  - xcode
+  - swift-playgrounds
+  - develop-in-swift
+---
+
+You can read Swift in a browser. Shipping an iPhone, Mac, or Apple Watch app happens on a Mac. Xcode, the Simulator, code signing, and the upload to App Store Connect are Apple's tools, and they run on macOS.
+
+Get that machine ready once. Every later lesson is then practice.
+
+## What to install
+
+You need a Mac whose macOS version can run the current Xcode. The Xcode page on the Mac App Store states the minimum. Install Xcode from that store. It is free, and it includes the Swift compiler, previews, Simulators, Instruments, and the organizer that uploads builds.
+
+Sign in to Xcode with an Apple Account under Settings, Accounts. A free account runs apps in the Simulator and, with limits, on a device you personally own. A paid Apple Developer Program membership is what you need later for TestFlight and the stores. Do not buy it on day one.
+
+Swift Playground, on Mac or iPad, is a good place for the next few language lessons if a full app target feels heavy. You will still return to Xcode for SwiftUI.
+
+## Prove the three templates
+
+Create a project you are allowed to delete. Choose File, New, Project, then iOS, App. Set the interface to SwiftUI and the language to Swift. Leave storage off for this first run.
+
+```swift
+import SwiftUI
+
+@main
+struct FirstLightApp: App {
+    var body: some Scene {
+        WindowGroup {
+            Text("Hello from the Simulator")
+                .padding()
+        }
+    }
+}
+```
+
+Press Run and pick an iPhone Simulator. The first launch may download a device runtime. When the text appears, the toolchain works.
+
+Repeat the new-project steps for a macOS App and a watchOS App. Run each one. You are only proving that three templates exist.
+
+<Surfaces>
+<Surface name="iPhone">
+
+The Simulator is the daily driver for this guide. A physical iPhone can wait until signing is a lesson of its own.
+
+</Surface>
+<Surface name="Mac">
+
+A macOS app runs on the same Mac as Xcode. There is no separate phone-shaped simulator for it.
+
+</Surface>
+<Surface name="Watch">
+
+The watch Simulator is paired with an iPhone Simulator. Give the first launch extra time.
+
+</Surface>
+</Surfaces>
+
+<Callout title="Where people stall">
+
+They treat the Simulator like a web preview and refresh the browser. Or they stop because a physical device asks for a signing team. Stay on the Simulator until the foundation track is finished.
+
+</Callout>
+
+## Exercise
+
+Install Xcode. Run the throwaway iOS app, then the macOS and watchOS templates. Rename the text in each so you know which target you launched.
+
+<Solution>
+
+If the iOS Simulator never appears, open Xcode, Settings, Components, and download an iOS platform. If a physical device is selected in the run destination menu, switch the destination to a Simulator. The watch target needs both a watch and a paired iPhone runtime.
+
+</Solution>

@@ -1,0 +1,77 @@
+---
+title: A sidebar and a keyboard
+slug: sidebar-and-keyboard
+track: mac
+level: beginner
+order: 2
+minutes: 16
+summary: NavigationSplitView for the list, and keyboard commands so the pointer is optional.
+exit:
+  - "You can show a sidebar and a detail pane."
+  - "You can move selection with the keyboard."
+  - "You can add a command with a keyboard shortcut."
+sources:
+  - navigation
+  - commands
+  - hig-macos
+  - wwdc-swiftui-mac
+---
+
+Mac navigation is a column, not a stack of full-screen pages. `NavigationSplitView` gives you a sidebar and a detail. Selection is state. When selection changes, the detail changes. The list does not have to disappear.
+
+The keyboard is the primary input for many Mac users. If a frequent action exists only as a tiny icon, it is unfinished.
+
+## Selection drives the detail
+
+```swift
+import SwiftUI
+
+struct DeskSplit: View {
+    @State private var lessons = ["Optionals", "Windows", "Tables"]
+    @State private var selection: String?
+
+    var body: some View {
+        NavigationSplitView {
+            List(lessons, id: \.self, selection: $selection) { lesson in
+                Text(lesson)
+            }
+            .navigationTitle("Lessons")
+        } detail: {
+            Text(selection ?? "Select a lesson")
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .focusedValue(\.selectedLesson, selection)
+    }
+}
+```
+
+Add a command in the `App` scene so the shortcut lives in the menu bar, where people look.
+
+```swift
+.commands {
+    CommandGroup(after: .newItem) {
+        Button("Select Next Lesson") {
+            // Advance selection in the focused window.
+        }
+        .keyboardShortcut("]", modifiers: [.command])
+    }
+}
+```
+
+A command that reaches into a window needs focused values or a focused model. The next lessons tighten that. Today, notice the shape: the menu item is not inside the button in the detail view. It is a command.
+
+<Callout title="Where people stall">
+
+They use `id: \.self` on titles and then rename a lesson while it is selected, so selection points at a value that no longer exists. Use a stable id. They also forget that Mac lists already support type-to-select and arrow keys when the list is focused. Do not build a custom key handler until the system one fails you.
+
+</Callout>
+
+## Exercise
+
+Put three lessons in the sidebar. Arrow between them. Add Command-N as "New lesson" in the menu, and make it append a row. The shortcut must work when the detail pane is focused, not only when the button is hovered.
+
+<Solution>
+
+Keep `[Lesson]` with ids in `@State` or in an `@Observable` model owned above the split view. `CommandGroup(after: .newItem)` replaces or sits beside the system New item. Append from a focused binding or from the model in the environment. If the shortcut only works when a toolbar button is focused, the menu item is not connected to the model. Move the action into `.commands` and call the model.
+
+</Solution>

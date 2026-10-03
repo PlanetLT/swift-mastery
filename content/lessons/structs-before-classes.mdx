@@ -1,0 +1,100 @@
+---
+title: Structs before classes
+slug: structs-before-classes
+track: foundation
+level: beginner
+order: 6
+minutes: 16
+summary: Value types for models, reference types when identity matters, and why a SwiftUI screen prefers the first.
+exit:
+  - "You can show that two structs with the same fields are equal as values."
+  - "You can show that two class instances are different objects even with the same fields."
+  - "You can name one reason a view model might still be a class."
+sources:
+  - swift-structures
+  - swift-tour
+  - wwdc-demystify
+  - sundell
+---
+
+A struct is copied when you assign it. A class is shared. That single difference explains a lot of SwiftUI bugs and a lot of SwiftUI calm.
+
+Reach for a struct for data: a lesson, a note, a coordinate. Reach for a class when many owners must see the same changing object, or when a framework demands a class. `ObservableObject` from older tutorials is a class. The newer `@Observable` macro can sit on a class too. The data inside can still be structs.
+
+## Copy versus share
+
+```swift
+struct Note {
+    var title: String
+    var body: String
+}
+
+var original = Note(title: "Draft", body: "Hello")
+var edited = original
+edited.title = "Final"
+// original.title is still "Draft"
+
+final class Folder {
+    var name: String
+    init(name: String) { self.name = name }
+}
+
+let inbox = Folder(name: "Inbox")
+let alias = inbox
+alias.name = "Archive"
+// inbox.name is also "Archive"
+```
+
+`edited` did not change `original`, because the assignment copied the struct. `alias` and `inbox` are two names for one object. If a list row and a detail screen both hold the class, they change together. Sometimes that is what you want. Often it is a surprise.
+
+SwiftUI's identity rules, explained in Demystify SwiftUI, care about whether a view's data is a new value. Structs make "new value" obvious.
+
+<Callout title="Where people stall">
+
+They make every model a class because a previous language did, then cannot tell why two screens edited each other. Or they mark a struct `mutating` function and call it on a `let`. If the value is not allowed to change, the function is not allowed to change it. That error is the feature.
+
+</Callout>
+
+<Surfaces>
+<Surface name="iPhone">
+
+A row struct can pass into a detail view. Edits come back through a binding or a new value, which you will add in the state lesson.
+
+</Surface>
+<Surface name="Mac">
+
+Two windows can hold copies of a struct and diverge, or share one class and stay in lockstep. Choose on purpose.
+
+</Surface>
+<Surface name="Watch">
+
+Send a small struct across Watch Connectivity later. A class does not travel in a message.
+
+</Surface>
+</Surfaces>
+
+## Exercise
+
+Add `isEmpty` to `Note` as a computed property. Write a mutating method `append(line:)` that adds text to `body`. Call it on a `var` and confirm a separate copy stays unchanged.
+
+<Solution>
+
+```swift
+struct Note {
+    var title: String
+    var body: String
+    var isEmpty: Bool { body.isEmpty }
+
+    mutating func append(line: String) {
+        body += (body.isEmpty ? "" : "\n") + line
+    }
+}
+
+var first = Note(title: "A", body: "")
+var second = first
+first.append(line: "Started")
+```
+
+After the call, `first.body` has the line and `second.body` is still empty.
+
+</Solution>
