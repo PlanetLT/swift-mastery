@@ -39,7 +39,7 @@ Publishing is a manual GitHub Action, [Deploy to Vercel](.github/workflows/deplo
    - `VERCEL_PROJECT_ID`
 5. Open **Actions → Deploy to Vercel → Run workflow**.
 
-The site is served from the Vercel domain root, such as `https://<project>.vercel.app`. If GitHub Pages was enabled before, turn it off under **Settings → Pages** so the old URL is no longer the published site.
+A successful run publishes production at [https://swift-mastery.vercel.app](https://swift-mastery.vercel.app). If GitHub Pages was enabled before, turn it off under **Settings → Pages** so the old URL is no longer the published site.
 
 ## How the guide is organized
 
