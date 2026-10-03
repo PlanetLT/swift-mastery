@@ -39,7 +39,7 @@ export default function HomePage() {
           <p className="text-xs font-semibold tracking-[0.18em] text-muted-foreground uppercase">
             Field guide · Swift 6 and SwiftUI
           </p>
-          <h1 className="mt-4 max-w-xl font-heading text-5xl leading-[1.05] font-medium tracking-tight sm:text-6xl">
+          <h1 className="mt-4 max-w-xl font-heading text-5xl leading-[1.05] font-semibold tracking-tight sm:text-6xl">
             One language.
             <span className="block">Three surfaces.</span>
           </h1>
@@ -93,7 +93,7 @@ export default function HomePage() {
               <p className="text-xs font-semibold tracking-[0.16em] text-muted-foreground uppercase">
                 {track.kicker}
               </p>
-              <h2 className="mt-2 font-heading text-3xl font-medium">{track.title}</h2>
+              <h2 className="mt-2 font-heading text-3xl font-semibold">{track.title}</h2>
               <p className="mt-3 max-w-md text-sm leading-6 text-foreground/80">
                 {track.description}
               </p>
@@ -106,7 +106,7 @@ export default function HomePage() {
       </section>
 
       <section className="mx-auto max-w-6xl px-4 py-12">
-        <h2 className="font-heading text-3xl font-medium">The method</h2>
+        <h2 className="font-heading text-3xl font-semibold">The method</h2>
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {steps.map((step) => (
             <article key={step.number} className="rounded-2xl border border-border p-4">
@@ -120,7 +120,7 @@ export default function HomePage() {
 
       <section className="mx-auto grid max-w-6xl gap-8 px-4 pb-8 md:grid-cols-2">
         <div>
-          <h2 className="font-heading text-3xl font-medium">Who it is for</h2>
+          <h2 className="font-heading text-3xl font-semibold">Who it is for</h2>
           <div className="mt-4 space-y-3 text-[1.02rem] leading-7">
             <p>
               You are new to programming, or new to Apple platforms, and you want
@@ -140,7 +140,7 @@ export default function HomePage() {
           </div>
         </div>
         <div className="rounded-2xl bg-foreground px-5 py-6 text-background">
-          <h2 className="font-heading text-3xl font-medium">What “pro” means here</h2>
+          <h2 className="font-heading text-3xl font-semibold">What “pro” means here</h2>
           <ul className="mt-4 space-y-2 text-sm leading-6 text-background/85">
             <li>You can explain why a view updated.</li>
             <li>You can keep work off the main actor until the screen needs it.</li>

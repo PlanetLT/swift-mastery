@@ -50,7 +50,7 @@ export default async function TrackPage({
         <p className={`text-xs font-semibold tracking-[0.16em] uppercase ${track.textClass}`}>
           {track.kicker}
         </p>
-        <h1 className="mt-2 font-heading text-4xl font-medium tracking-tight sm:text-5xl">
+        <h1 className="mt-2 font-heading text-4xl font-semibold tracking-tight sm:text-5xl">
           {track.title}
         </h1>
         <p className="mt-4 max-w-2xl text-lg leading-8">{track.description}</p>

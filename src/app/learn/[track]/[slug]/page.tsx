@@ -78,14 +78,14 @@ export default async function LessonPage({
           <span aria-hidden> · </span>
           {lesson.meta.minutes} min read
         </p>
-        <h1 className="mt-3 font-heading text-4xl leading-tight font-medium tracking-tight sm:text-5xl">
+        <h1 className="mt-3 font-heading text-4xl leading-tight font-semibold tracking-tight sm:text-5xl">
           {lesson.meta.title}
         </h1>
         <p className="mt-4 max-w-2xl text-lg leading-8 text-foreground/85">
           {lesson.meta.summary}
         </p>
         <LessonActions slug={lesson.meta.slug} />
-        <div className="lesson-prose prose prose-stone max-w-none prose-headings:font-heading prose-headings:font-medium prose-h2:mt-10 prose-h2:text-2xl prose-p:leading-8">
+        <div className="lesson-prose prose prose-stone max-w-none prose-headings:font-heading prose-headings:font-semibold prose-h2:mt-10 prose-h2:text-2xl prose-p:leading-8">
           {content}
         </div>
         <section className="mt-10 rounded-2xl border border-border bg-card p-5">

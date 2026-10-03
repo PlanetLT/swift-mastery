@@ -20,7 +20,7 @@ export default function MapPage() {
       <p className="text-xs font-semibold tracking-[0.16em] text-muted-foreground uppercase">
         One language, three surfaces
       </p>
-      <h1 className="mt-3 max-w-3xl font-heading text-4xl font-medium tracking-tight sm:text-5xl">
+      <h1 className="mt-3 max-w-3xl font-heading text-4xl font-semibold tracking-tight sm:text-5xl">
         What transfers, and what you learn again
       </h1>
       <p className="mt-4 max-w-2xl text-lg leading-8">
